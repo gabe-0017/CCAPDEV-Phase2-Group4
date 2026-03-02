@@ -416,9 +416,9 @@
   background-color: #2a3540;
 }
 
-/*logout.html (modal)*/
+/*logout.html & cancel.html (modals)*/
 
-.logout {
+.modal {
   display: none;
   position: fixed;
   top: 0;
@@ -430,26 +430,38 @@
   align-items: center;
 }
 
-.logout-card {
+.modal-form {
+  width: 100%;
+  max-width: 500px;
+  margin: auto;
+  background: white;
+  align-items: center;
+  justify-content: center;
+  padding: 50px;
+  border-radius: 25px;
+  box-shadow: 0 25px 50px rgb(0, 0, 0);
+}
+
+.modal-card {
   width: 100%;
   max-width: 300px;
   background: white;
-  gap: 15px;
+  gap: 5px;
   padding: 30px;
-  margin-top: 30px;
+  margin-top: 15px;
   border-radius: 15px;
   box-shadow: 0 15px 30px rgb(0, 0, 0);
   text-align: center;
 }
 
-.logout-actions {
+.modal-actions {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
-.btn-confirm-logout {
+.btn-confirm-modal {
   text-align: center;
   padding: 10px;
   border-radius: 5px;
@@ -458,7 +470,7 @@
   text-decoration: none;
 }
 
-.btn-cancel-logout {
+.btn-cancel-modal {
   text-align: center;
   padding: 10px;
   border-radius: 5px;
@@ -467,10 +479,10 @@
   text-decoration: none;
 }
 
-.btn-confirm-logout:hover {
+.btn-confirm-modal:hover {
   background-color: #ff0000;
 }
 
-.btn-cancel-logout:hover {
+.btn-cancel-modal:hover {
   background-color: #087830;
 }
