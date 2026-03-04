@@ -106,6 +106,14 @@ function initializeLogoutModal() {
 }
 
 /* delete account (modal) */
+function loadDeleteModal() {
+  fetch("/modals/delete.html")
+    .then(response => response.text())
+    .then(data => {
+      document.body.insertAdjacentHTML("beforeend", data);
+      initializeDeleteModal();
+    });
+
 function initializeDeleteModal() {
   const deleteBtn = document.getElementById("deleteAccountBtn");
   const modal = document.getElementById("deleteModal");
@@ -296,5 +304,6 @@ if (storedUser && storedUser.role === "admin") { // if current user's role=admin
       searchCard.style.display = "block";
     }
 }
+
 
 
