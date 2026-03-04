@@ -304,6 +304,32 @@ if (storedUser && storedUser.role === "admin") { // if current user's role=admin
     }
 }
 
+// Navbar (shows certain features if user is admin only)
+function initializeNavbarRole() {
+  const storedUser = JSON.parse(localStorage.getItem("currentUser"));
 
+  if (!storedUser) return;
 
+  if (storedUser.role === "admin") {
+    const navLinks = document.getElementById("navLinks");
 
+    if (!navLinks) return;
+
+    // prevent duplicate insertion
+    if (!document.getElementById("adminSearchLink")) {
+      const li = document.createElement("li");
+      li.id = "adminSearchLink";
+
+      const link = document.createElement("a");
+      link.href = "adminSearch.html";
+      link.textContent = "Search";
+
+      li.appendChild(link);
+      navLinks.appendChild(li);
+    }
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  initializeNavbarRole();
+});
