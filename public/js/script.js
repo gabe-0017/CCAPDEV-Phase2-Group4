@@ -294,7 +294,7 @@ function canRemove() {
 
 /* ===== ADMIN VIEW ===== */
 
-// Search portal card (in home.html)
+// 'Search' portal card (for admin homepage)
 const storedUser = JSON.parse(localStorage.getItem("currentUser")); // read the current user info
 
 if (storedUser && storedUser.role === "admin") { // if current user's role=admin then show the search portal card
@@ -304,7 +304,7 @@ if (storedUser && storedUser.role === "admin") { // if current user's role=admin
     }
 }
 
-// Navbar (shows certain features if user is admin only)
+// Admin navbar
 function initializeNavbarRole() {
   const storedUser = JSON.parse(localStorage.getItem("currentUser"));
 
@@ -332,4 +332,20 @@ function initializeNavbarRole() {
 
 document.addEventListener("DOMContentLoaded", function () {
   initializeNavbarRole();
+});
+
+// Reserve for a student
+function initializeReservationRole() {
+  const storedUser = JSON.parse(localStorage.getItem("currentUser"));
+  const studentEmail = document.getElementById("studentEmail");
+
+  if (!studentEmail) return;
+
+  if (!storedUser || storedUser.role !== "admin") {
+    studentEmail.style.display = "none"; // hide for student view
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  initializeReservationRole();
 });
