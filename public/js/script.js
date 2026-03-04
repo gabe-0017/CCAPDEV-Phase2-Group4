@@ -63,7 +63,7 @@ if (registerForm) {
             localStorage.setItem("role", user.role);
 
             alert("Registration successful!");
-            window.location.href = "pages/home.html";
+            window.location.href = "home.html";
         } else {
             alert("Please fill out all fields.");
         }
@@ -268,3 +268,4 @@ if (storedUser && storedUser.role === "admin") { // if current user's role=admin
       searchCard.style.display = "block";
     }
 }
+
