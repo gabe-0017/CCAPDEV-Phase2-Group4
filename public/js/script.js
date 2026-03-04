@@ -257,7 +257,14 @@ function canRemove() {
   });
 }
 
+/* ===== ADMIN VIEW ===== */
 
+// Search portal card (in home.html)
+const storedUser = JSON.parse(localStorage.getItem("currentUser")); // read the current user info
 
-
-
+if (storedUser && storedUser.role === "admin") { // if current user's role=admin then show the search portal card
+    const searchCard = document.getElementById("adminSearchCard");
+    if (searchCard) {
+      searchCard.style.display = "block";
+    }
+}
