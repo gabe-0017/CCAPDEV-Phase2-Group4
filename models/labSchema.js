@@ -7,7 +7,8 @@ const labSchema = new mongoose.Schema({
         trim: true
     },
     seat: {
-        type: [String],
+        seatNumber: String,
+        status: String
         required: true
     },
     lab_tech: { // ensured that the user's role = "Lab Technician" in 'labController.js'
