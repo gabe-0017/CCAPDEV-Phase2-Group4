@@ -1,10 +1,9 @@
 const mongoose = require("mongoose");
 
 const labSchema = new mongoose.Schema({
-    labName: String,
-    location: String,
-    capacity: Number,
-    equipment: [String]
+    laboratory: String,
+    seat: [String]
+    /* laboratory technician field (lab_tech) */
 });
 
 module.exports = mongoose.model("Lab", labSchema);
