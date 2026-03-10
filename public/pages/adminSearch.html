@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Book Reservation</title>
+    <title>User Search</title>
     <link rel="stylesheet" href="../css/styles.css" />
   </head>
 
@@ -22,60 +22,22 @@
     </header>
 
 <main class="container">
-<h2>Free Slots search</h2>
-<p class="subtitle">Search for students and view their reservation history.</p>
-  
-<div class="form-card">
-<form id="searchForm">
-          <div class="form-group">
-            <label>Laboratory</label>
-            <select id="searchLab" required>
-              <option disabled selected>Select a lab</option>
-              <option>Lab 1</option>
-              <option>Lab 2</option>
-              <option>Lab 3</option>
-              <option>Lab 4</option>
-              <option>Lab 5</option>
-              <option>Lab 6</option>
-            </select>
-          </div>
-          
-             <div class="form-row">
-            <div class="form-group">
-              <label>Date</label>
-              <input type="date" id="searchDate" required />
-            </div>
-
-            <div class="form-group">
-              <label>Start Time</label>
-              <input type="time" id="searchStartTime" required />
-            </div>
-
-            <div class="form-group">
-              <label>End Time</label>
-              <input type="time" id="searchEndTime" required />
-            </div>
-          </div>
-
-          <button type="submit" class="btn-large">Search</button>
-        </form>
-</div>
-
-<div id="searchResults" style="display: none; margin-top: 30px;" class="search-results-card">
-  <h3>Available Slots</h3>
-  <div id="slotsContainer" class="slots-grid">
+  <h2>Search</h2></h2>
+  <p class="subtitle">Search for students and view their reservation history.</p>
     
+  <div class="form-card">
+    <form id="searchForm">
+      <div class="form-group" id="studentEmail">
+        <label>Student Account Email</label>
+        <input type="email" required />
+      </div>
+  
+      <button type="submit" class="btn-large">Search</button>
+    </form>
   </div>
-</div>
-
 </main>
 
 <script src="/js/script.js"></script>
 
 </body>
-
 </html>
-
-
-
-
