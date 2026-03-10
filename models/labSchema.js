@@ -10,7 +10,7 @@ const labSchema = new mongoose.Schema({
         type: [String],
         required: true
     },
-    lab_tech: { // need to ensure that the user has role = "Lab Technician" later...
+    lab_tech: { // ensured that the user's role = "Lab Technician" in 'labController.js'
         type: mongoose.Schema.Types.ObjectId,
         ref: "User" 
     }
