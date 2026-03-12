@@ -1,83 +1,66 @@
 const Reservation = require("../models/reservationSchema");
 const User = require("../models/userSchema");
 
-
-
 exports.createReservation = async (req, res) => {
-    try {
+  try {
+    const { userId, lab, seat, date, time, purpose, lab_tech } = req.body;
 
-        const { userId, lab, seat, date, time, purpose, lab_tech } = req.body;
+    const user = await User.findById(userId);
 
-        const user = await User.findById(userId);
-
-        if (!user) {
-            return res.status(404).send("User not found.");
-        }
-
-        const reservation = new Reservation({
-            userId,
-            lab,
-            seat,
-            date,
-            time,
-            purpose,
-            lab_tech
-        });
-
-        await reservation.save();
-
-        res.redirect("/pages/manage.html");
-
-    } catch (error) {
-        res.status(500).send("Reservation error.");
+    if (!user) {
+      return res.status(404).send("User not found.");
     }
+
+    const reservation = new Reservation({
+      userId,
+      lab,
+      seat,
+      date,
+      time,
+      purpose,
+      lab_tech,
+    });
+
+    await reservation.save();
+
+    res.redirect("/pages/manage.html");
+  } catch (error) {
+    res.status(500).send("Reservation error.");
+  }
 };
-
-
 
 exports.getReservations = async (req, res) => {
-    try {
+  try {
+    const reservations = await Reservation.find().populate("userId");
 
-        const reservations = await Reservation.find()
-            .populate("userId");
-
-        res.json(reservations);
-
-    } catch (error) {
-        res.status(500).send("Error retrieving reservations.");
-    }
+    res.json(reservations);
+  } catch (error) {
+    res.status(500).send("Error retrieving reservations.");
+  }
 };
-
-
 
 exports.cancelReservation = async (req, res) => {
-    try {
+  try {
+    const { id } = req.params;
 
-        const { id } = req.params;
+    await Reservation.findByIdAndDelete(id);
 
-        await Reservation.findByIdAndDelete(id);
-
-        res.send("Reservation cancelled.");
-
-    } catch (error) {
-        res.status(500).send("Error cancelling reservation.");
-    }
+    res.send("Reservation cancelled.");
+  } catch (error) {
+    res.status(500).send("Error cancelling reservation.");
+  }
 };
 
-
-
 exports.editReservation = async (req, res) => {
-    try {
+  try {
+    const { id } = req.params;
 
-        const { id } = req.params;
+    const updatedData = req.body;
 
-        const updatedData = req.body;
+    await Reservation.findByIdAndUpdate(id, updatedData);
 
-        await Reservation.findByIdAndUpdate(id, updatedData);
-
-        res.send("Reservation updated.");
-
-    } catch (error) {
-        res.status(500).send("Error updating reservation.");
-    }
+    res.send("Reservation updated.");
+  } catch (error) {
+    res.status(500).send("Error updating reservation.");
+  }
 };

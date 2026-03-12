@@ -2,116 +2,125 @@
 const loginForm = document.getElementById("loginForm");
 
 if (loginForm) {
-    loginForm.addEventListener("submit", function(e) {
-        e.preventDefault(); // stop page reload
+  loginForm.addEventListener("submit", function (e) {
+    e.preventDefault(); // stop page reload
 
-        const username = document.getElementById("username").value.trim();
-        const password = document.getElementById("password").value.trim();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-        let storedUser = JSON.parse(localStorage.getItem("currentUser"));
+    let storedUser = JSON.parse(localStorage.getItem("currentUser"));
 
-        // fake student login (for faster testing)
-        if (username.toLowerCase() === "student" && password.toLowerCase() === "student") {
-            storedUser = {
-                username: "student",
-                role: "student"
-            };
-            localStorage.setItem("currentUser", JSON.stringify(storedUser));
-            localStorage.setItem("role", "student");
-            window.location.href = "pages/home.html";
-            return;
-        }
+    // fake student login (for faster testing)
+    if (
+      username.toLowerCase() === "student" &&
+      password.toLowerCase() === "student"
+    ) {
+      storedUser = {
+        username: "student",
+        role: "student",
+      };
+      localStorage.setItem("currentUser", JSON.stringify(storedUser));
+      localStorage.setItem("role", "student");
+      window.location.href = "pages/home.html";
+      return;
+    }
 
-        // fake admin login (for testing only)
-        if (username.toLowerCase() === "admin" && password.toLowerCase() === "admin") {
-            storedUser = {
-                username: "admin",
-                role: "admin"
-            };
-            localStorage.setItem("currentUser", JSON.stringify(storedUser));
-            localStorage.setItem("role", "admin");
-            window.location.href = "pages/home.html";
-            return;
-        }
+    // fake admin login (for testing only)
+    if (
+      username.toLowerCase() === "admin" &&
+      password.toLowerCase() === "admin"
+    ) {
+      storedUser = {
+        username: "admin",
+        role: "admin",
+      };
+      localStorage.setItem("currentUser", JSON.stringify(storedUser));
+      localStorage.setItem("role", "admin");
+      window.location.href = "pages/home.html";
+      return;
+    }
 
-        if (storedUser && username === storedUser.username && password === storedUser.password) {
-            localStorage.setItem("role", storedUser.role);
-            window.location.href = "pages/home.html";
-        } else {
-            alert("Invalid username or password.");
-        }
-    });
+    if (
+      storedUser &&
+      username === storedUser.username &&
+      password === storedUser.password
+    ) {
+      localStorage.setItem("role", storedUser.role);
+      window.location.href = "pages/home.html";
+    } else {
+      alert("Invalid username or password.");
+    }
+  });
 }
 
 /* signup verification */
 const registerForm = document.getElementById("registerForm");
 
 if (registerForm) {
-    registerForm.addEventListener("submit", function(e) {
-        e.preventDefault(); // stop page reload
+  registerForm.addEventListener("submit", function (e) {
+    e.preventDefault(); // stop page reload
 
-        const fullname = document.getElementById("full_name").value.trim();
-        const email = document.getElementById("email").value.trim();
-        const username = document.getElementById("new_user").value.trim();
-        const password = document.getElementById("new_pass").value.trim();
-        const role = document.getElementById("role").value.trim();
+    const fullname = document.getElementById("full_name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const username = document.getElementById("new_user").value.trim();
+    const password = document.getElementById("new_pass").value.trim();
+    const role = document.getElementById("role").value.trim();
 
-        if (fullname && email && username && password && role) {
-            let userView;
-            if (role === "Lab Technician") {
-              userView = "admin";
-            } else {
-              userView = "student";
-            }
-            
-            const user = {};
-            user.fullname = fullname;
-            user.email = email;
-            user.username = username;
-            user.password = password;
-            user.role = userView;
+    if (fullname && email && username && password && role) {
+      let userView;
+      if (role === "Lab Technician") {
+        userView = "admin";
+      } else {
+        userView = "student";
+      }
 
-            localStorage.setItem("currentUser", JSON.stringify(user));
-            localStorage.setItem("role", user.role);
+      const user = {};
+      user.fullname = fullname;
+      user.email = email;
+      user.username = username;
+      user.password = password;
+      user.role = userView;
 
-            alert("Registration successful!");
-            window.location.href = "home.html";
-        } else {
-            alert("Please fill out all fields.");
-        }
-    });
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      localStorage.setItem("role", user.role);
+
+      alert("Registration successful!");
+      window.location.href = "home.html";
+    } else {
+      alert("Please fill out all fields.");
+    }
+  });
 }
 
 /* logout (modal) */
 fetch("/modals/logout.html")
-  .then(response => response.text())
-  .then(data => {
+  .then((response) => response.text())
+  .then((data) => {
     document.body.insertAdjacentHTML("beforeend", data);
     initializeLogoutModal(); // activate modal after loading
   });
 
 function initializeLogoutModal() {
-
   const logoutBtn = document.getElementById("logoutBtn");
   const logoutModal = document.getElementById("logoutModal");
   const cancelLogout = document.getElementById("cancelLogout");
   const confirmLogout = document.getElementById("confirmLogout");
 
   if (logoutBtn) {
-    logoutBtn.addEventListener("click", function(e) {
+    logoutBtn.addEventListener("click", function (e) {
       e.preventDefault();
       logoutModal.style.display = "flex";
     });
   }
 
   if (cancelLogout) {
-    cancelLogout.addEventListener("click", function() {
+    cancelLogout.addEventListener("click", function () {
       logoutModal.style.display = "none";
     });
   }
 
   if (confirmLogout) {
-    confirmLogout.addEventListener("click", function() {
+    confirmLogout.addEventListener("click", function () {
       window.location.href = "/";
     });
   }
@@ -119,11 +128,11 @@ function initializeLogoutModal() {
 
 /* delete account (modal) */
 fetch("/modals/delete.html")
-  .then(response => response.text())
-  .then(data => {
+  .then((response) => response.text())
+  .then((data) => {
     document.body.insertAdjacentHTML("beforeend", data);
     initializeDeleteModal();
-});
+  });
 
 function initializeDeleteModal() {
   const deleteBtn = document.getElementById("deleteAccountBtn");
@@ -145,7 +154,7 @@ function initializeDeleteModal() {
 
   if (confirmBtn) {
     confirmBtn.addEventListener("click", () => {
-      modal.style.display = "none"; 
+      modal.style.display = "none";
       alert("Account deleted!"); // add real DB logic later
       window.location.href = "/index.html"; // return to login after deletion
     });
@@ -154,8 +163,8 @@ function initializeDeleteModal() {
 
 /* edit reservation (modal) */
 fetch("/modals/edit.html")
-  .then(r => r.text())
-  .then(data => {
+  .then((r) => r.text())
+  .then((data) => {
     document.body.insertAdjacentHTML("beforeend", data);
     initializeEditModal();
   });
@@ -166,15 +175,15 @@ function initializeEditModal() {
   const editForm = document.getElementById("editReservationForm");
   const cancelEdit = document.getElementById("cancelEdit");
 
-  editBtns.forEach(btn => {
-    btn.addEventListener("click", e => {
+  editBtns.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
       e.preventDefault();
       editModal.style.display = "flex";
     });
   });
 
   if (editForm) {
-    editForm.addEventListener("submit", e => {
+    editForm.addEventListener("submit", (e) => {
       e.preventDefault(); // prevent page reload
 
       editModal.style.display = "none";
@@ -191,8 +200,8 @@ function initializeEditModal() {
 
 /* cancel reservation (modal) */
 fetch("/modals/cancel.html")
-  .then(r => r.text())
-  .then(data => {
+  .then((r) => r.text())
+  .then((data) => {
     document.body.insertAdjacentHTML("beforeend", data);
     initializeCancelModal();
   });
@@ -203,37 +212,40 @@ function initializeCancelModal() {
   const cancelCancel = document.getElementById("cancelCancel");
   const confirmCancel = document.getElementById("confirmCancel");
 
-  cancelBtns.forEach(btn => {
-    btn.addEventListener("click", e => {
+  cancelBtns.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
       e.preventDefault();
       cancelModal.style.display = "flex";
     });
   });
 
-  if (cancelCancel) cancelCancel.addEventListener("click", () => cancelModal.style.display = "none");
-  if (confirmCancel) confirmCancel.addEventListener("click", () => {
-    cancelModal.style.display = "none";
-    alert("Reservation Cancelled!"); // add real DB logic later
-  });
+  if (cancelCancel)
+    cancelCancel.addEventListener(
+      "click",
+      () => (cancelModal.style.display = "none"),
+    );
+  if (confirmCancel)
+    confirmCancel.addEventListener("click", () => {
+      cancelModal.style.display = "none";
+      alert("Reservation Cancelled!"); // add real DB logic later
+    });
 }
 
 /* view reservation details (modal) */
 fetch("/modals/view-details.html")
-  .then(r => r.text())
-  .then(data => {
+  .then((r) => r.text())
+  .then((data) => {
     document.body.insertAdjacentHTML("beforeend", data);
     initializeViewDetailsModal();
   });
 
 function initializeViewDetailsModal() {
-
   const viewBtns = document.querySelectorAll(".btn-view");
   const modal = document.getElementById("viewDetailsModal");
   const closeBtn = document.getElementById("closeDetails");
 
-  viewBtns.forEach(btn => {
+  viewBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
-
       const reservationId = btn.dataset.id;
 
       // empty placeholders (for now)
@@ -260,15 +272,18 @@ function initializeViewDetailsModal() {
 
 /* cancel Student's reservation (called from Adminmanage)*/
 
-
 function canRemove() {
-  document.querySelectorAll(".reservation-card").forEach(card => {
+  document.querySelectorAll(".reservation-card").forEach((card) => {
     const cancelBtn = card.querySelector(".btn-cancel");
 
     if (!cancelBtn) return;
 
-    const dateText = card.querySelectorAll(".detail-value")[1].textContent.trim();
-    const timeText = card.querySelectorAll(".detail-value")[2].textContent.trim();
+    const dateText = card
+      .querySelectorAll(".detail-value")[1]
+      .textContent.trim();
+    const timeText = card
+      .querySelectorAll(".detail-value")[2]
+      .textContent.trim();
     const startTime = timeText.split(" - ")[0];
 
     const reservationTime = new Date(`${dateText} ${startTime}`);
@@ -282,7 +297,8 @@ function canRemove() {
         cancelBtn.title = "";
       } else {
         cancelBtn.disabled = true;
-        cancelBtn.title = "Can only cancel within 10 minutes of reservation start";
+        cancelBtn.title =
+          "Can only cancel within 10 minutes of reservation start";
       }
     }
 
@@ -309,11 +325,12 @@ function canRemove() {
 // 'Search' portal card (for admin homepage)
 const storedUser = JSON.parse(localStorage.getItem("currentUser")); // read the current user info
 
-if (storedUser && storedUser.role === "admin") { // if current user's role=admin then show the search portal card
-    const searchCard = document.getElementById("adminSearchCard");
-    if (searchCard) {
-      searchCard.style.display = "block";
-    }
+if (storedUser && storedUser.role === "admin") {
+  // if current user's role=admin then show the search portal card
+  const searchCard = document.getElementById("adminSearchCard");
+  if (searchCard) {
+    searchCard.style.display = "block";
+  }
 }
 
 // Admin navbar
@@ -362,103 +379,117 @@ document.addEventListener("DOMContentLoaded", function () {
   initializeReservationRole();
 });
 
-
-
 /* Laboratories slot availability */
 function initializeLabSeatReservationView() {
-  const seatGrid = document.querySelector('.seat-grid');
-  const reservationPanel = document.getElementById('seatReservationPanel');
-  const reservationTitle = document.getElementById('reservationPanelTitle');
-  const dateInput = document.getElementById('reservationDate');
-  const timeslotContainer = document.getElementById('reservationTimeslots');
-  const labSelect = document.querySelector('.lab-select');
+  const seatGrid = document.querySelector(".seat-grid");
+  const reservationPanel = document.getElementById("seatReservationPanel");
+  const reservationTitle = document.getElementById("reservationPanelTitle");
+  const dateInput = document.getElementById("reservationDate");
+  const timeslotContainer = document.getElementById("reservationTimeslots");
+  const labSelect = document.querySelector(".lab-select");
 
-  if (!seatGrid || !reservationPanel || !reservationTitle || !dateInput || !timeslotContainer) return;
+  if (
+    !seatGrid ||
+    !reservationPanel ||
+    !reservationTitle ||
+    !dateInput ||
+    !timeslotContainer
+  )
+    return;
 
   let selectedSeat = null;
 
   const today = new Date();
   dateInput.min = formatDateInput(today);
-  dateInput.max = formatDateInput(new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000));
+  dateInput.max = formatDateInput(
+    new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000),
+  );
   dateInput.value = dateInput.min;
 
-  seatGrid.querySelectorAll('.seat').forEach(seat => {
-    seat.addEventListener('click', () => {
-      if (seat.classList.contains('reserved')) return;
+  seatGrid.querySelectorAll(".seat").forEach((seat) => {
+    seat.addEventListener("click", () => {
+      if (seat.classList.contains("reserved")) return;
 
-      document.querySelectorAll('.seat.selected').forEach(s => s.classList.remove('selected'));
-      seat.classList.add('selected');
+      document
+        .querySelectorAll(".seat.selected")
+        .forEach((s) => s.classList.remove("selected"));
+      seat.classList.add("selected");
 
       selectedSeat = seat.textContent.trim();
-      reservationPanel.style.display = 'block';
+      reservationPanel.style.display = "block";
       reservationTitle.textContent = `Seat ${selectedSeat} Reservations`;
 
       renderTimeslots(selectedSeat, dateInput.value, labSelect?.value);
     });
   });
 
-  dateInput.addEventListener('change', () => {
+  dateInput.addEventListener("change", () => {
     if (!selectedSeat) return;
     renderTimeslots(selectedSeat, dateInput.value, labSelect?.value);
   });
 
   if (labSelect) {
-    labSelect.addEventListener('change', () => {
+    labSelect.addEventListener("change", () => {
       selectedSeat = null;
-      document.querySelectorAll('.seat.selected').forEach(s => s.classList.remove('selected'));
-      reservationPanel.style.display = 'none';
-      timeslotContainer.innerHTML = '<p class="hint">Select a seat and date to see available time slots.</p>';
+      document
+        .querySelectorAll(".seat.selected")
+        .forEach((s) => s.classList.remove("selected"));
+      reservationPanel.style.display = "none";
+      timeslotContainer.innerHTML =
+        '<p class="hint">Select a seat and date to see available time slots.</p>';
     });
   }
 
   ensureDemoReservations();
 
   function renderTimeslots(seat, date, lab) {
-    const seatKey = `${lab || 'lab1'}-${seat}`;
+    const seatKey = `${lab || "lab1"}-${seat}`;
     const reservations = getReservations();
-    const dayReservations = (reservations[seatKey] && reservations[seatKey][date]) || {};
+    const dayReservations =
+      (reservations[seatKey] && reservations[seatKey][date]) || {};
 
-    const slots = generateTimeSlots('08:00', '20:00');
+    const slots = generateTimeSlots("08:00", "20:00");
 
-    const table = document.createElement('table');
-    table.className = 'timeslot-table';
+    const table = document.createElement("table");
+    table.className = "timeslot-table";
 
-    const thead = document.createElement('thead');
-    thead.innerHTML = '<tr><th>Time</th><th>Status</th><th>Reserved By</th></tr>';
+    const thead = document.createElement("thead");
+    thead.innerHTML =
+      "<tr><th>Time</th><th>Status</th><th>Reserved By</th></tr>";
     table.appendChild(thead);
 
-    const tbody = document.createElement('tbody');
+    const tbody = document.createElement("tbody");
 
-    slots.forEach(slot => {
+    slots.forEach((slot) => {
       const startKey = slot.start;
       const reservation = dayReservations[startKey];
 
-      const tr = document.createElement('tr');
-      const timeTd = document.createElement('td');
+      const tr = document.createElement("tr");
+      const timeTd = document.createElement("td");
       timeTd.textContent = `${slot.start} - ${slot.end}`;
 
-      const statusTd = document.createElement('td');
-      statusTd.className = 'status';
+      const statusTd = document.createElement("td");
+      statusTd.className = "status";
 
-      const reservedByTd = document.createElement('td');
+      const reservedByTd = document.createElement("td");
 
       if (reservation) {
-        statusTd.textContent = 'Reserved';
-        statusTd.classList.add('reserved');
+        statusTd.textContent = "Reserved";
+        statusTd.classList.add("reserved");
 
         if (reservation.anonymous) {
-          reservedByTd.textContent = 'Reserved anonymously';
+          reservedByTd.textContent = "Reserved anonymously";
         } else {
-          const anchor = document.createElement('a');
+          const anchor = document.createElement("a");
           anchor.textContent = reservation.username;
           anchor.href = `profile.html?user=${encodeURIComponent(reservation.username)}`;
-          anchor.target = '_self';
+          anchor.target = "_self";
           reservedByTd.appendChild(anchor);
         }
       } else {
-        statusTd.textContent = 'Available';
-        statusTd.classList.add('available');
-        reservedByTd.textContent = '-';
+        statusTd.textContent = "Available";
+        statusTd.classList.add("available");
+        reservedByTd.textContent = "-";
       }
 
       tr.appendChild(timeTd);
@@ -468,15 +499,15 @@ function initializeLabSeatReservationView() {
     });
 
     table.appendChild(tbody);
-    timeslotContainer.innerHTML = '';
+    timeslotContainer.innerHTML = "";
     timeslotContainer.appendChild(table);
   }
 
   function generateTimeSlots(startTime, endTime) {
     const slots = [];
 
-    const [startHour, startMin] = startTime.split(':').map(Number);
-    const [endHour, endMin] = endTime.split(':').map(Number);
+    const [startHour, startMin] = startTime.split(":").map(Number);
+    const [endHour, endMin] = endTime.split(":").map(Number);
 
     let currentHour = startHour;
     let currentMin = startMin;
@@ -484,7 +515,7 @@ function initializeLabSeatReservationView() {
     const endTotalMin = endHour * 60 + endMin;
 
     while (currentHour * 60 + currentMin < endTotalMin) {
-      const slotStart = `${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`;
+      const slotStart = `${String(currentHour).padStart(2, "0")}:${String(currentMin).padStart(2, "0")}`;
 
       currentMin += 30;
       if (currentMin >= 60) {
@@ -492,7 +523,7 @@ function initializeLabSeatReservationView() {
         currentHour += 1;
       }
 
-      const slotEnd = `${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`;
+      const slotEnd = `${String(currentHour).padStart(2, "0")}:${String(currentMin).padStart(2, "0")}`;
 
       slots.push({ start: slotStart, end: slotEnd });
     }
@@ -502,18 +533,18 @@ function initializeLabSeatReservationView() {
 
   function formatDateInput(date) {
     const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd}`;
   }
 
   function getReservations() {
-    const reservations = localStorage.getItem('labReservations');
+    const reservations = localStorage.getItem("labReservations");
     return reservations ? JSON.parse(reservations) : {};
   }
 
   function saveReservations(reservations) {
-    localStorage.setItem('labReservations', JSON.stringify(reservations));
+    localStorage.setItem("labReservations", JSON.stringify(reservations));
   }
 
   function ensureDemoReservations() {
@@ -526,30 +557,29 @@ function initializeLabSeatReservationView() {
     const tomorrowKey = formatDateInput(tomorrow);
 
     const demo = {
-      'lab1-A1': {
+      "lab1-A1": {
         [todayKey]: {
-          '08:00': { username: 'student', anonymous: false },
-          '10:00': { anonymous: true },
-          '13:00': { username: 'admin', anonymous: false }
+          "08:00": { username: "student", anonymous: false },
+          "10:00": { anonymous: true },
+          "13:00": { username: "admin", anonymous: false },
         },
         [tomorrowKey]: {
-          '11:00': { username: 'student', anonymous: false }
-        }
+          "11:00": { username: "student", anonymous: false },
+        },
       },
-      'lab1-B2': {
+      "lab1-B2": {
         [todayKey]: {
-          '09:30': { anonymous: true },
-          '14:00': { username: 'john_doe', anonymous: false }
-        }
-      }
+          "09:30": { anonymous: true },
+          "14:00": { username: "john_doe", anonymous: false },
+        },
+      },
     };
 
     saveReservations(demo);
   }
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener("DOMContentLoaded", function () {
   initializeLabSeatReservationView();
 });
 /* End of Laboratories slot availability */
-
