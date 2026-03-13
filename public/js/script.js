@@ -56,6 +56,8 @@ const logoutModal = document.getElementById("logoutModal");
 const logoutBtn = document.getElementById("logoutBtn");
 const cancelLogout = document.getElementById("cancelLogout");
 const confirmLogout = document.getElementById("confirmLogout");
+const editLabSelect = document.getElementById("editLab");
+const editSeatSelect = document.getElementById("editSeat");
 
 if (logoutBtn) logoutBtn.addEventListener("click", (e) => { e.preventDefault(); logoutModal.style.display = "flex"; });
 if (cancelLogout) cancelLogout.addEventListener("click", () => { logoutModal.style.display = "none"; });
@@ -70,90 +72,97 @@ if (confirmLogout) confirmLogout.addEventListener("click", async () => {
     }
 });
 
+
+
 /* edit reservation (modal) */
 const editModal = document.getElementById("editModal");
 const editBtns = document.querySelectorAll(".btn-edit");
 const editForm = document.getElementById("editReservationForm");
 const cancelEdit = document.getElementById("cancelEdit");
-const editLabSelect = document.getElementById("editLab");
-const editSeatSelect = document.getElementById("editSeat");
 
-editBtns.forEach(btn => btn.addEventListener("click", async (e) => {
-    e.preventDefault();
-
-    const id = btn.dataset.id;
-    editForm.reservationId.value = id;
-
-    try {
-        const res = await fetch(`/reservations/${id}`);
-        if (!res.ok) throw new Error(await res.text());
-        const reservation = await res.json();
-
-        // fill current/existing/unedited 'date', 'times', and 'purpose'
-        document.getElementById("editDate").value = reservation.date;
-        document.getElementById("editStartTime").value = reservation.start_time;
-        document.getElementById("editEndTime").value = reservation.end_time;
-        document.getElementById("editPurpose").value = reservation.purpose;
-
-        // select lab
-        editLabSelect.value = reservation.lab._id;
-
-        // populate seats (for selected lab)
-        const lab = await (await fetch(`/labs/${reservation.lab._id}`)).json();
-        editSeatSelect.innerHTML = '<option disabled>Select a seat</option>';
-        lab.seats.forEach(seat => {
-            const opt = document.createElement("option");
-            opt.value = seat.seatNumber;
-            opt.textContent = seat.seatNumber;
-            if (seat.seatNumber === reservation.seat) opt.selected = true;
-            editSeatSelect.appendChild(opt);
-        });
-
-        editModal.style.display = "flex";
-
-    } catch (err) {
-        console.error(err);
-        alert("Failed to load reservation data.");
-    }
-}));
-
-// populate seats (for selected lab)
-editLabSelect.addEventListener("change", async () => {
-    const labId = editLabSelect.value;
+async function populateEditSeats(labId, selectedSeat) {
+    if (!labId || !editSeatSelect) return;
+    editSeatSelect.innerHTML = '<option disabled selected>Select a seat</option>';
 
     try {
         const res = await fetch(`/labs/${labId}`);
-        if (res.ok) {
-            const lab = await res.json();
-            editSeatSelect.innerHTML = '<option disabled selected>Select a seat</option>';
+        if (!res.ok) return;
+        const lab = await res.json();
 
-            lab.seats.forEach(seat => {
-                const opt = document.createElement("option");
-                opt.value = seat.seatNumber;
-                opt.textContent = seat.seatNumber;
-                editSeatSelect.appendChild(opt);
-            });
-        }
+        lab.seats.forEach(seat => {
+            const option = document.createElement('option');
+            option.value = seat.seatNumber;
+            option.textContent = seat.seatNumber;
+            if (seat.seatNumber === selectedSeat) option.selected = true;
+            editSeatSelect.appendChild(option);
+        });
     } catch (err) {
-        console.error(err);
-        alert("Error loading seats.");
+        console.error('Error loading seats for edit modal:', err);
     }
-});
+}
 
-// submit edited reservation
+if (editLabSelect) {
+    editLabSelect.addEventListener('change', async () => {
+        const labId = editLabSelect.value;
+        await populateEditSeats(labId, null);
+    });
+}
+
+editBtns.forEach(btn => btn.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const id = btn.dataset.id;
+    document.getElementById("editReservationId").value = id;
+
+    const labId = btn.dataset.labId;
+    const seat = btn.dataset.seat;
+    const date = btn.dataset.date;
+    const startTime = btn.dataset.start;
+    const endTime = btn.dataset.end;
+    const purpose = btn.dataset.purpose;
+
+    if (editLabSelect && labId) editLabSelect.value = labId;
+    await populateEditSeats(labId, seat);
+
+    const editDateInput = document.getElementById("editDate");
+    const editStartInput = document.getElementById("editStartTime");
+    const editEndInput = document.getElementById("editEndTime");
+    const editPurposeInput = document.getElementById("editPurpose");
+
+    if (editDateInput) editDateInput.value = date || "";
+    if (editStartInput) editStartInput.value = startTime || "";
+    if (editEndInput) editEndInput.value = endTime || "";
+    if (editPurposeInput) editPurposeInput.value = purpose || "";
+
+    editModal.style.display = "flex";
+
+}));
+
 if (editForm) editForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = new FormData(editForm);
     const id = formData.get("reservationId");
+
+    if (!id) {
+        console.error('Edit request missing reservation id.');
+        alert('Unable to edit reservation: missing id. Please try again.');
+        return;
+    }
+
     const payload = Object.fromEntries(formData.entries());
+    const url = `/reservations/${encodeURIComponent(id)}`;
+    console.log('Sending edit request', url, payload);
 
     try {
-        const res = await fetch(`/reservations/${id}`, {
+        const res = await fetch(url, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            credentials: 'include'
         });
-        if (res.ok) editModal.style.display = "none";
+        if (res.ok) {
+            editModal.style.display = "none";
+            window.location.reload();
+        }
         else alert(await res.text());
     } catch (err) {
         console.error(err);
@@ -161,7 +170,6 @@ if (editForm) editForm.addEventListener("submit", async (e) => {
     }
 });
 
-// cancel button
 if (cancelEdit) cancelEdit.addEventListener("click", () => { editModal.style.display = "none"; });
 
 /* cancel reservation (modal) */
@@ -170,15 +178,30 @@ const cancelBtns = document.querySelectorAll(".btn-cancel");
 const cancelCancel = document.getElementById("cancelCancel");
 const confirmCancel = document.getElementById("confirmCancel");
 
-cancelBtns.forEach(btn => btn.addEventListener("click", (e) => { e.preventDefault(); cancelModal.style.display = "flex"; }));
+cancelBtns.forEach(btn => btn.addEventListener("click", (e) => {
+    e.preventDefault();
+    const id = btn.dataset.id;
+    confirmCancel.dataset.id = id;
+    cancelModal.style.display = "flex";
+}));
 if (cancelCancel) cancelCancel.addEventListener("click", () => cancelModal.style.display = "none");
 if (confirmCancel) confirmCancel.addEventListener("click", async () => {
     const id = confirmCancel.dataset.id;
+    console.log('Deleting reservation with ID:', id);
+    console.log('Fetch URL:', `/reservations/${id}`);
+    if (!id) {
+        alert('Reservation ID not set. Please try again.');
+        return;
+    }
     try {
-        const res = await fetch(`/reservations/${id}`, {  // CHANGED: /reservation to /reservations
-            method: "DELETE"
+        const res = await fetch(`/reservations/${id}`, {
+            method: "DELETE",
+            credentials: 'include'
         });
-        if (res.ok) cancelModal.style.display = "none";
+        if (res.ok) {
+            cancelModal.style.display = "none";
+            window.location.reload();
+        }
         else alert(await res.text());
     } catch (err) {
         console.error(err);
@@ -194,18 +217,21 @@ const closeDetails = document.getElementById("closeDetails");
 viewBtns.forEach(btn => btn.addEventListener("click", async () => {
     const id = btn.dataset.id;
     try {
-        const res = await fetch(`/reservations/${id}`);  // CHANGED: /reservation to /reservations
+        const res = await fetch(`/reservations/${id}`, {
+            credentials: 'include'
+        });
         if (res.ok) {
             const details = await res.json();
-            document.getElementById("detailTitle").textContent = details.lab + " - " + details.seat;
+            document.getElementById("detailTitle").textContent = (details.lab && details.lab.lab ? details.lab.lab : "Lab") + " - " + details.seat;
             document.getElementById("detailStatus").textContent = details.status;
-            document.getElementById("detailId").textContent = details.id;
-            document.getElementById("detailName").textContent = details.name;
-            document.getElementById("detailReserved").textContent = details.reserved;
-            document.getElementById("detailArrived").textContent = details.arrived;
+            document.getElementById("detailId").textContent = details._id || details.id;
+            document.getElementById("detailName").textContent = details.userId && details.userId.fullname ? details.userId.fullname : "";
+            document.getElementById("detailReserved").textContent = details.createdAt ? new Date(details.createdAt).toLocaleString() : "";
+            document.getElementById("detailArrived").textContent = details.arrived ? new Date(details.arrived).toLocaleString() : "";
             document.getElementById("detailDate").textContent = details.date;
-            document.getElementById("detailTime").textContent = details.time;
-            document.getElementById("detailTech").textContent = details.tech;
+            document.getElementById("detailStartTime").textContent = details.start_time ? details.start_time : "";
+            document.getElementById("detailEndTime").textContent = details.end_time ? details.end_time : "";
+            document.getElementById("detailTech").textContent = details.lab && details.lab.lab_tech && details.lab.lab_tech.fullname ? details.lab.lab_tech.fullname : "";
         } else alert(await res.text());
     } catch (err) {
         console.error(err);
@@ -215,28 +241,3 @@ viewBtns.forEach(btn => btn.addEventListener("click", async () => {
 }));
 
 if (closeDetails) closeDetails.addEventListener("click", () => { viewDetailsModal.style.display = "none"; });
-
-/* delete account (modal) */
-const deleteModal = document.getElementById("deleteModal");
-const deleteAccountBtn = document.getElementById("deleteAccountBtn");
-const cancelDelete = document.getElementById("cancelDelete");
-const confirmDelete = document.getElementById("confirmDelete");
-
-if (deleteAccountBtn) deleteAccountBtn.addEventListener("click", () => {
-    deleteModal.style.display = "flex";
-});
-
-if (cancelDelete) cancelDelete.addEventListener("click", () => {
-    deleteModal.style.display = "none";
-});
-
-if (confirmDelete) confirmDelete.addEventListener("click", async () => {
-    try {
-        const res = await fetch("/deleteAccount", { method: "DELETE" });
-        if (res.ok) window.location.href = "/";
-        else alert("Error deleting account. Please try again.");
-    } catch (err) {
-        console.error(err);
-        alert("Delete error.");
-    }
-});
