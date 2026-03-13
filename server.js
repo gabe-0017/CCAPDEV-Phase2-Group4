@@ -40,7 +40,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // user authentication
 app.use(session({
-    secret: "your-secret-key-change-this-in-production",
+    secret: "apdev-mco2-grp4",
     resave: false,
     saveUninitialized: false,
     cookie: { secure: false } // set to true if using HTTPS
