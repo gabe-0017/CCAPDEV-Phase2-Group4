@@ -15,9 +15,6 @@
         <a class="logo" href="/home">LabReserve.</a>
 
         <ul class="nav-links">
-          {{#if (eq user.role "Lab Technician")}}
-            <li><a href="/adminSearch">Search</a></li>
-          {{/if}}
           <li><a href="/labs">Laboratories</a></li>
           <li><a href="/reservation">Reserve</a></li>
           <li><a href="/manage">Manage</a></li>
@@ -40,39 +37,20 @@
           <input type="hidden" name="userId" value="{{user._id}}">
 
           <div class="form-group">
-
             <label>Laboratory</label>
-
-            <select name="lab" required>
-
+            <select name="lab" id="labSelect" required>
               <option disabled selected>Select a lab</option>
-
               {{#each labs}}
-                <option value="{{this._id}}">
-                  {{this.lab}}
-                </option>
+                <option value="{{this._id}}">{{this.lab}}</option>
               {{/each}}
-
             </select>
-
           </div>
 
           <div class="form-group">
-
             <label>Seat</label>
-
-            <select name="seat" required>
-
+            <select name="seat" id="seatSelect" required>
               <option disabled selected>Select a seat</option>
-
-              {{#each labs.[0].seats}}
-                <option value="{{this.seatNumber}}">
-                  {{this.seatNumber}}
-                </option>
-              {{/each}}
-
             </select>
-
           </div>
 
           <div class="form-row">
@@ -83,7 +61,12 @@
             </div>
 
             <div class="form-group">
-              <label>Time</label>
+              <label>Start Time</label>
+              <input type="time" name="time" required />
+            </div>
+
+            <div class="form-group">
+              <label>End Time</label>
               <input type="time" name="time" required />
             </div>
 
@@ -108,7 +91,35 @@
 
     <script src="/js/script.js"></script>
 
-  </body>
+    <script>
+      const labSelect = document.getElementById('labSelect');
+      const seatSelect = document.getElementById('seatSelect');
 
+      labSelect.addEventListener('change', async () => {
+        const labId = labSelect.value;
+
+        seatSelect.innerHTML = '<option disabled selected>Select a seat</option>';
+
+        if (!labId) return;
+
+        try {
+          const res = await fetch(`/labs/${labId}`);
+          const lab = await res.json();
+
+          lab.seats.forEach(seat => {
+            const option = document.createElement('option');
+            option.value = seat.seatNumber;
+            option.textContent = seat.seatNumber;
+            seatSelect.appendChild(option);
+          });
+
+        } catch (err) {
+          console.error('Error loading seats:', err);
+          seatSelect.innerHTML = '<option disabled>Error loading seats</option>';
+        }
+      });
+    </script>
+
+  </body>
 
 </html>
