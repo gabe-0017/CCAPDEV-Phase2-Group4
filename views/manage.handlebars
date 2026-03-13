@@ -8,61 +8,109 @@
 </head>
 
 <body class="bg">
-
+  
   <header>
     <nav class="navbar">
+
       <a class="logo" href="/home">LabReserve.</a>
+
       <ul class="nav-links">
         {{#if (eq user.role "Lab Technician")}}
-          <li><a href="/adminSearch">Search</a></li>
-        {{/if}}
+            <li><a href="/search">Search</a></li>
+          {{/if}}
         <li><a href="/labs">Laboratories</a></li>
         <li><a href="/reservation">Reserve</a></li>
         <li><a href="/manage">Manage</a></li>
         <li><a href="/profile">Profile</a></li>
         <li><a href="#" id="logoutBtn">Logout</a></li>
       </ul>
+
     </nav>
   </header>
 
   <main class="container">
+
     <h2>Manage Reservations</h2>
-    <p class="subtitle">View, edit, or cancel your current seat reservation/s.</p>
+    <p class="subtitle">
+      View, edit, or cancel your current seat reservation/s.
+    </p>
 
     <div class="manage-container">
+
       {{#each reservations}}
-      <div class="reservation-card">
-        <div class="reservation-header">
-          <h3>{{lab.lab}} - Seat {{seat}}</h3>
-          <span class="status-badge {{status}}">{{status}}</span>
+
+        <div class="reservation-card">
+
+          <div class="reservation-header">
+
+            <h3>
+              {{lab.lab}} - Seat {{seat}}
+            </h3>
+
+            <span class="status-badge {{status}}">
+              {{status}}
+            </span>
+
+          </div>
+
+          <div class="reservation-details">
+
+            <div class="detail-item">
+              <span class="detail-label">Date:</span>
+              <span class="detail-value">{{date}}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Start Time:</span>
+              <span class="detail-value">{{start_time}}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">End Time:</span>
+              <span class="detail-value">{{end_time}}</span>
+            </div>
+
+          </div>
+
+          <div class="reservation-actions">
+
+            {{#if (eq status "Pending")}}
+
+              <button class="btn btn-edit"
+                data-id="{{_id}}"
+                data-lab-id="{{lab._id}}"
+                data-seat="{{seat}}"
+                data-date="{{date}}"
+                data-start="{{start_time}}"
+                data-end="{{end_time}}"
+                data-purpose="{{purpose}}">
+                Edit
+              </button>
+
+              <button class="btn btn-cancel" data-id="{{_id}}">
+                Cancel
+              </button>
+
+            {{/if}}
+
+            <button class="btn btn-view" data-id="{{_id}}">
+              View Details
+            </button>
+
+          </div>
+
         </div>
 
-        <div class="reservation-details">
-          <div class="detail-item"><span class="detail-label">Date:</span> <span class="detail-value">{{date}}</span></div>
-          <div class="detail-item"><span class="detail-label">Start Time:</span> <span class="detail-value">{{start_time}}</span></div>
-          <div class="detail-item"><span class="detail-label">End Time:</span> <span class="detail-value">{{end_time}}</span></div>
-        </div>
-
-        <div class="reservation-actions">
-          {{#if (eq status "Pending")}}
-          <button class="btn btn-edit" data-id="{{_id}}">Edit</button>
-          <button class="btn btn-cancel" data-id="{{_id}}">Cancel</button>
-          {{/if}}
-          <button class="btn btn-view" data-id="{{_id}}">View Details</button>
-        </div>
-      </div>
       {{/each}}
+
     </div>
+
   </main>
 
   {{> edit}}
   {{> cancel}}
   {{> view-details}}
 
-  <script>
-    window.labsData = {{{labsJSON}}};
-  </script>
-  <script src="/js/script.js"></script>
+<script src="/js/script.js"></script>
 
-</body>
+  </body>
+
 </html>
