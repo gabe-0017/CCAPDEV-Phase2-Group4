@@ -51,8 +51,9 @@ if (registerForm) {
     });
 }
 
-/* logout (modal) */
 document.addEventListener('DOMContentLoaded', function() {
+
+    /* logout (modal) */
     const logoutBtn = document.getElementById("logoutBtn");
     const logoutModal = document.getElementById("logoutModal");
     const cancelLogout = document.getElementById("cancelLogout");
@@ -98,172 +99,190 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-});
 
-/* edit reservation (modal) */
-const editModal = document.getElementById("editModal");
-const editBtns = document.querySelectorAll(".btn-edit");
-const editForm = document.getElementById("editReservationForm");
-const cancelEdit = document.getElementById("cancelEdit");
+    /* edit reservation (modal) */
+    const editModal = document.getElementById("editModal");
+    const editBtns = document.querySelectorAll(".btn-edit");
+    const editForm = document.getElementById("editReservationForm");
+    const cancelEdit = document.getElementById("cancelEdit");
+    const editLabSelect = document.getElementById("editLab");
+    const editSeatSelect = document.getElementById("editSeat");
 
-async function populateEditSeats(labId, selectedSeat) {
-    if (!labId || !editSeatSelect) return;
-    editSeatSelect.innerHTML = '<option disabled selected>Select a seat</option>';
+    async function populateEditSeats(labId, selectedSeat) {
+        if (!labId || !editSeatSelect) return;
+        editSeatSelect.innerHTML = '<option disabled selected>Select a seat</option>';
 
-    try {
-        const res = await fetch(`/labs/${labId}`);
-        if (!res.ok) return;
-        const lab = await res.json();
+        try {
+            const res = await fetch(`/labs/${labId}`);
+            if (!res.ok) return;
+            const lab = await res.json();
 
-        lab.seats.forEach(seat => {
-            const option = document.createElement('option');
-            option.value = seat.seatNumber;
-            option.textContent = seat.seatNumber;
-            if (seat.seatNumber === selectedSeat) option.selected = true;
-            editSeatSelect.appendChild(option);
-        });
-    } catch (err) {
-        console.error('Error loading seats for edit modal:', err);
+            lab.seats.forEach(seat => {
+                const option = document.createElement('option');
+                option.value = seat.seatNumber;
+                option.textContent = seat.seatNumber;
+                if (seat.seatNumber === selectedSeat) option.selected = true;
+                editSeatSelect.appendChild(option);
+            });
+        } catch (err) {
+            console.error('Error loading seats for edit modal:', err);
+        }
     }
-}
 
-if (editLabSelect) {
-    editLabSelect.addEventListener('change', async () => {
-        const labId = editLabSelect.value;
-        await populateEditSeats(labId, null);
+    if (editLabSelect) {
+        editLabSelect.addEventListener('change', async () => {
+            const labId = editLabSelect.value;
+            await populateEditSeats(labId, null);
+        });
+    }
+
+    editBtns.forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const id = btn.dataset.id;
+            document.getElementById("editReservationId").value = id;
+
+            const labId = btn.dataset.labId;
+            const seat = btn.dataset.seat;
+            const date = btn.dataset.date;
+            const startTime = btn.dataset.start;
+            const endTime = btn.dataset.end;
+            const purpose = btn.dataset.purpose;
+
+            if (editLabSelect && labId) editLabSelect.value = labId;
+            await populateEditSeats(labId, seat);
+
+            document.getElementById("editDate").value = date || "";
+            document.getElementById("editStartTime").value = startTime || "";
+            document.getElementById("editEndTime").value = endTime || "";
+            document.getElementById("editPurpose").value = purpose || "";
+
+            editModal.style.display = "flex";
+        });
     });
-}
 
-editBtns.forEach(btn => btn.addEventListener("click", async (e) => {
-    e.preventDefault();
-    const id = btn.dataset.id;
-    document.getElementById("editReservationId").value = id;
+    if (editForm) {
+        editForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const formData = new FormData(editForm);
+            const id = formData.get("reservationId");
 
-    const labId = btn.dataset.labId;
-    const seat = btn.dataset.seat;
-    const date = btn.dataset.date;
-    const startTime = btn.dataset.start;
-    const endTime = btn.dataset.end;
-    const purpose = btn.dataset.purpose;
+            if (!id) {
+                alert('Unable to edit reservation: missing id.');
+                return;
+            }
 
-    if (editLabSelect && labId) editLabSelect.value = labId;
-    await populateEditSeats(labId, seat);
-
-    const editDateInput = document.getElementById("editDate");
-    const editStartInput = document.getElementById("editStartTime");
-    const editEndInput = document.getElementById("editEndTime");
-    const editPurposeInput = document.getElementById("editPurpose");
-
-    if (editDateInput) editDateInput.value = date || "";
-    if (editStartInput) editStartInput.value = startTime || "";
-    if (editEndInput) editEndInput.value = endTime || "";
-    if (editPurposeInput) editPurposeInput.value = purpose || "";
-
-    editModal.style.display = "flex";
-
-}));
-
-if (editForm) editForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const formData = new FormData(editForm);
-    const id = formData.get("reservationId");
-
-    if (!id) {
-        console.error('Edit request missing reservation id.');
-        alert('Unable to edit reservation: missing id. Please try again.');
-        return;
+            const payload = Object.fromEntries(formData.entries());
+            try {
+                const res = await fetch(`/reservations/${id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                    credentials: 'include'
+                });
+                if (res.ok) {
+                    editModal.style.display = "none";
+                    window.location.reload();
+                } else {
+                    alert(await res.text());
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Update failed.");
+            }
+        });
     }
 
-    const payload = Object.fromEntries(formData.entries());
-    const url = `/reservations/${encodeURIComponent(id)}`;
-    console.log('Sending edit request', url, payload);
-
-    try {
-        const res = await fetch(url, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-            credentials: 'include'
+    if (cancelEdit) {
+        cancelEdit.addEventListener("click", () => { 
+            editModal.style.display = "none"; 
         });
-        if (res.ok) {
-            editModal.style.display = "none";
-            window.location.reload();
-        }
-        else alert(await res.text());
-    } catch (err) {
-        console.error(err);
-        alert("Update failed.");
+    }
+
+    /* cancel reservation (modal) */
+    const cancelModal = document.getElementById("cancelModal");
+    const cancelBtns = document.querySelectorAll(".btn-cancel");
+    const cancelCancel = document.getElementById("cancelCancel");
+    const confirmCancel = document.getElementById("confirmCancel");
+
+    cancelBtns.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            const id = btn.dataset.id;
+            if (confirmCancel) confirmCancel.dataset.id = id;
+            if (cancelModal) cancelModal.style.display = "flex";
+        });
+    });
+
+    if (cancelCancel && cancelModal) {
+        cancelCancel.addEventListener("click", () => { 
+            cancelModal.style.display = "none"; 
+        });
+    }
+
+    if (confirmCancel) {
+        confirmCancel.addEventListener("click", async () => {
+            const id = confirmCancel.dataset.id;
+            if (!id) {
+                alert('Reservation ID not set.');
+                return;
+            }
+            try {
+                const res = await fetch(`/reservations/${id}`, {
+                    method: "DELETE",
+                    credentials: 'include'
+                });
+                if (res.ok) {
+                    if (cancelModal) cancelModal.style.display = "none";
+                    window.location.reload();
+                } else {
+                    alert(await res.text());
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Cancellation failed.");
+            }
+        });
+    }
+
+    /* view reservation details (modal) */
+    const viewDetailsModal = document.getElementById("viewDetailsModal");
+    const viewBtns = document.querySelectorAll(".btn-view");
+    const closeDetails = document.getElementById("closeDetails");
+
+    viewBtns.forEach(btn => {
+        btn.addEventListener("click", async () => {
+            const id = btn.dataset.id;
+            try {
+                const res = await fetch(`/reservations/${id}`, {
+                    credentials: 'include'
+                });
+                if (res.ok) {
+                    const details = await res.json();
+                    document.getElementById("detailTitle").textContent = (details.lab?.lab || "Lab") + " - " + details.seat;
+                    document.getElementById("detailStatus").textContent = details.status;
+                    document.getElementById("detailId").textContent = details._id || details.id;
+                    document.getElementById("detailName").textContent = details.userId?.fullname || "";
+                    document.getElementById("detailReserved").textContent = details.createdAt ? new Date(details.createdAt).toLocaleString() : "";
+                    document.getElementById("detailArrived").textContent = details.arrived ? new Date(details.arrived).toLocaleString() : "";
+                    document.getElementById("detailDate").textContent = details.date;
+                    document.getElementById("detailStartTime").textContent = details.start_time || "";
+                    document.getElementById("detailEndTime").textContent = details.end_time || "";
+                    document.getElementById("detailTech").textContent = details.lab?.lab_tech?.fullname || "Not assigned";
+                } else {
+                    alert(await res.text());
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Failed to load details.");
+            }
+            if (viewDetailsModal) viewDetailsModal.style.display = "flex";
+        });
+    });
+
+    if (closeDetails && viewDetailsModal) {
+        closeDetails.addEventListener("click", () => { 
+            viewDetailsModal.style.display = "none"; 
+        });
     }
 });
-
-if (cancelEdit) cancelEdit.addEventListener("click", () => { editModal.style.display = "none"; });
-
-/* cancel reservation (modal) */
-const cancelModal = document.getElementById("cancelModal");
-const cancelBtns = document.querySelectorAll(".btn-cancel");
-const cancelCancel = document.getElementById("cancelCancel");
-const confirmCancel = document.getElementById("confirmCancel");
-
-cancelBtns.forEach(btn => btn.addEventListener("click", (e) => {
-    e.preventDefault();
-    const id = btn.dataset.id;
-    confirmCancel.dataset.id = id;
-    cancelModal.style.display = "flex";
-}));
-if (cancelCancel) cancelCancel.addEventListener("click", () => cancelModal.style.display = "none");
-if (confirmCancel) confirmCancel.addEventListener("click", async () => {
-    const id = confirmCancel.dataset.id;
-    console.log('Deleting reservation with ID:', id);
-    console.log('Fetch URL:', `/reservations/${id}`);
-    if (!id) {
-        alert('Reservation ID not set. Please try again.');
-        return;
-    }
-    try {
-        const res = await fetch(`/reservations/${id}`, {
-            method: "DELETE",
-            credentials: 'include'
-        });
-        if (res.ok) {
-            cancelModal.style.display = "none";
-            window.location.reload();
-        }
-        else alert(await res.text());
-    } catch (err) {
-        console.error(err);
-        alert("Cancellation failed.");
-    }
-});
-
-/* view reservation details (modal) */
-const viewDetailsModal = document.getElementById("viewDetailsModal");
-const viewBtns = document.querySelectorAll(".btn-view");
-const closeDetails = document.getElementById("closeDetails");
-
-viewBtns.forEach(btn => btn.addEventListener("click", async () => {
-    const id = btn.dataset.id;
-    try {
-        const res = await fetch(`/reservations/${id}`, {
-            credentials: 'include'
-        });
-        if (res.ok) {
-            const details = await res.json();
-            document.getElementById("detailTitle").textContent = (details.lab && details.lab.lab ? details.lab.lab : "Lab") + " - " + details.seat;
-            document.getElementById("detailStatus").textContent = details.status;
-            document.getElementById("detailId").textContent = details._id || details.id;
-            document.getElementById("detailName").textContent = details.userId && details.userId.fullname ? details.userId.fullname : "";
-            document.getElementById("detailReserved").textContent = details.createdAt ? new Date(details.createdAt).toLocaleString() : "";
-            document.getElementById("detailArrived").textContent = details.arrived ? new Date(details.arrived).toLocaleString() : "";
-            document.getElementById("detailDate").textContent = details.date;
-            document.getElementById("detailStartTime").textContent = details.start_time ? details.start_time : "";
-            document.getElementById("detailEndTime").textContent = details.end_time ? details.end_time : "";
-            document.getElementById("detailTech").textContent = details.lab && details.lab.lab_tech && details.lab.lab_tech.fullname ? details.lab.lab_tech.fullname : "";
-        } else alert(await res.text());
-    } catch (err) {
-        console.error(err);
-        alert("Failed to load details.");
-    }
-    viewDetailsModal.style.display = "flex";
-}));
-
-if (closeDetails) closeDetails.addEventListener("click", () => { viewDetailsModal.style.display = "none"; });
