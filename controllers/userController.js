@@ -62,8 +62,22 @@ exports.loginUser = async (req, res) => {
 exports.updateUserProfile = async (req, res) => {
     try {
         const { id } = req.params;
-        const User = require("../models/userSchema");
-        await User.findByIdAndUpdate(id, req.body);
+        const updates = req.body;
+        
+        // new password (double verification - password mismatch)
+        if (updates.password) {
+            const confirmPassword = req.body.confirmPassword;
+            if (updates.password !== confirmPassword) {
+                return res.status(400).send("Passwords do not match.");
+            }
+            // remove confirmPassword from updates
+            delete updates.confirmPassword;
+        } else {
+            // remove password if not provided
+            delete updates.password;
+        }
+        
+        await User.findByIdAndUpdate(id, updates);
         res.redirect(`/profile/${id}`);
     } catch (error) {
         res.status(500).send("Error updating profile.");
