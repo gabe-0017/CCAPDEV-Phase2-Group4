@@ -17,7 +17,7 @@
       <ul class="nav-links">
         {{#if (eq user.role "Lab Technician")}}
             <li><a href="/search">Search</a></li>
-          {{/if}}
+        {{/if}}
         <li><a href="/labs">Laboratories</a></li>
         <li><a href="/reservation">Reserve</a></li>
         <li><a href="/manage">Manage</a></li>
@@ -30,10 +30,17 @@
 
   <main class="container">
 
-    <h2>Manage Reservations</h2>
-    <p class="subtitle">
-      View, edit, or cancel your current seat reservation/s.
-    </p>
+    {{#if isAdmin}}
+      <h2>Manage Reservations</h2>
+      <p class="subtitle">
+        Manage students' reservations.
+      </p>
+    {{else}}
+      <h2>Manage Reservations</h2>
+      <p class="subtitle">
+        View, edit, or cancel your seat reservation/s.
+      </p>
+    {{/if}}
 
     <div class="manage-container">
 
@@ -109,8 +116,10 @@
   {{> cancel}}
   {{> view-details}}
 
-<script src="/js/script.js"></script>
+  <script src="/js/script.js"></script>
 
+  {{> logout}}
+  
   </body>
 
 </html>
