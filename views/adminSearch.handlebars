@@ -3,17 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <title>User Search</title>
-    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="/css/styles.css" />
   </head>
 
   <body class="bg">
     <header>
       <nav class="navbar">
         <a class="logo" href="/home">LabReserve.</a>
-
-        <ul class="nav-links" id="navLinks">
+        <ul class="nav-links">
           {{#if (eq user.role "Lab Technician")}}
-              <li><a href="/search">Search</a></li>
+            <li><a href="/search">Search</a></li>
           {{/if}}
           <li><a href="/labs">Laboratories</a></li>
           <li><a href="/reservation">Reserve</a></li>
@@ -26,42 +25,56 @@
 
     <main class="container">
       <h2>Student Reservation Lookup</h2>
-      <p class="subtitle">Search for students and view their reservation history.</p>
+      <p class="subtitle">Search students by email to view/manage their reservations.</p>
       
       <div class="form-card">
-        <form id="searchForm" method="GET" action="/search">
-          <div class="form-group" id="studentEmail">
-            <label>Student Account Email</label>
-            <input type="email" name="username" required />
+        <form id="searchForm">
+          <div class="form-group">
+            <label>Search by Email</label>
+            <input type="email" name="email" id="searchInput" placeholder="Enter student email..." required />
           </div>
-      
           <button type="submit" class="btn-large">Search</button>
         </form>
       </div>
 
-      <!-- search results -->
+      <!-- Search results -->
       {{#if users}}
         <div class="search-results">
           {{#each users}}
-            <div class="user-card">
-              <p>{{this.fullname}} ({{this.email}})</p>
-              <!-- list reservations -->
-              {{#if this.reservations}}
-                <ul>
+            <div class="search-results-card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div>
+                  <h3>{{this.fullname}}</h3>
+                  <p><strong>Email:</strong> {{this.email}}</p>
+                </div>
+                <a href="/manage?userId={{this._id}}" class="btn">View/Manage Reservations</a>
+              </div>
+              
+              {{#if this.reservations.length}}
+                <h5>Recent Reservations:</h5>
+                <div class="slots-grid">
                   {{#each this.reservations}}
-                    <li>{{this.lab.lab}} - {{this.seat}} on {{this.date}} ({{this.status}})</li>
+                    <div class="slot-card {{#if (eq status "Pending")}}available{{/if}}">
+                      <div class="slot-time">{{date}} {{start_time}} - {{end_time}}</div>
+                      <div class="slot-info">
+                        <p><strong>{{../lab.lab}} - {{seat}}</strong></p>
+                        <p>Status: <span class="status-badge {{status.toLowerCase()}}">{{status}}</span></p>
+                      </div>
+                    </div>
                   {{/each}}
-                </ul>
+                </div>
+              {{else}}
+                <p style="color: #666; font-style: italic;">No reservations found.</p>
               {{/if}}
             </div>
           {{/each}}
         </div>
+      {{else}}
+        <p class="subtitle">No results found. Try a different email.</p>
       {{/if}}
     </main>
 
-    <script src="/js/script.js"></script>
-    
     {{> logout}}
+    <script src="/js/script.js"></script>
   </body>
-
 </html>
