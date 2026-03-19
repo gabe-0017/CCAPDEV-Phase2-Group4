@@ -47,19 +47,32 @@ exports.createReservation = async (req, res) => {
     }
 };
 
-// get all reservations
+// get reservations
 exports.getReservations = async (req, res) => {
     try {
-        const reservations = await Reservation.find({ userId: req.session.user._id })
-            .populate("userId")
-            .populate("lab");
+        let reservations;
+        const LabModel = require("../models/labSchema");
+        const labs = await LabModel.find();
 
-        const labs = await Lab.find();
+        if (req.session.user.role === "Lab Technician") {
+            // admin view: sees all reservations
+            reservations = await Reservation.find({})
+                .populate("userId")
+                .populate("lab")
+                .sort({ createdAt: -1 });
+        } else {
+            // student view: only sees their reservations
+            reservations = await Reservation.find({ userId: req.session.user._id })
+                .populate("userId")
+                .populate("lab")
+                .sort({ createdAt: -1 });
+        }
 
         res.render("manage", { 
             reservations, 
             labs, 
-            labsJSON: JSON.stringify(labs)
+            labsJSON: JSON.stringify(labs),
+            isAdmin: req.session.user.role === "Lab Technician"
         });
     } catch (error) {
         console.error(error);
