@@ -132,13 +132,20 @@ app.get("/reservations/:id", isAuthenticated, async (req, res) => {
         res.status(500).send("Error retrieving reservation.");
     }
 });
-app.get("/manage", isAuthenticated, reservationController.getReservations);
 app.delete("/reservations/:id", isAuthenticated, reservationController.cancelReservation);
 app.put("/reservations/:id", isAuthenticated, reservationController.editReservation);
 app.get("/reservation", isAuthenticated, async (req, res) => {
     const labs = await require("./models/labSchema").find();
     res.render("reservation", { labs });
 });
+app.get("/manage", isAuthenticated, reservationController.getReservations);
+app.get("/manage", isAuthenticated, (req, res, next) => {
+    if (req.query.userId && req.session.user.role === "Lab Technician") {
+        req.studentUserId = req.query.userId;
+        return next();
+    }
+    return reservationController.getReservations(req, res);
+}, reservationController.getStudentReservations);
 
 // route to home
 app.get("/home", isAuthenticated, async (req, res) => {
