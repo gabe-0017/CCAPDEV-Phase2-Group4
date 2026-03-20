@@ -13,7 +13,7 @@
 
         <ul class="nav-links" id="navLinks">
           {{#if (eq user.role "Lab Technician")}}
-              <li><a href="/search">Search</a></li>
+            <li><a href="/adminSearch">Search</a></li>
           {{/if}}
           <li><a href="/labs">Laboratories</a></li>
           <li><a href="/reservation">Reserve</a></li>
@@ -47,7 +47,7 @@
         
           <div class="form-group">
             <label>New Password</label>
-            <p style="color: #36454f; font-size:10px">leave blank to keep current password</p>
+            <p style="color:#808080; font-size:10px;">leave blank to keep current password</p>
             <input type="password" name="newPassword" id="newPassword" placeholder="Enter new password" />
           </div>
 
@@ -69,8 +69,7 @@
       </div>
     </main>
 
-
-       {{> delete}}
+    {{> delete}}
 
     <div id="logoutModal" class="modal">
       <div class="modal-card">
@@ -85,7 +84,46 @@
     
     <script src="/js/script.js"></script>
 
+    <script>
+    const deleteAccountBtn = document.getElementById("deleteAccountBtn");
+    const deleteModal = document.getElementById("deleteModal");
+    const cancelDelete = document.getElementById("cancelDelete");
+    const confirmDelete = document.getElementById("confirmDelete");
+    
+    if (deleteAccountBtn) {
+        deleteAccountBtn.addEventListener("click", () => {
+            deleteModal.style.display = "flex";
+        });
+    }
+    
+    if (cancelDelete) {
+        cancelDelete.addEventListener("click", () => {
+            deleteModal.style.display = "none";
+        });
+    }
+    
+    if (confirmDelete) {
+        confirmDelete.addEventListener("click", async () => {
+            try {
+                const res = await fetch("/deleteAccount", {
+                    method: "DELETE",
+                    credentials: 'include'
+                });
+                if (res.ok) {
+                    deleteModal.style.display = "none";
+                    alert("Account deleted successfully.");
+                    window.location.href = "/";
+                } else {
+                    alert(await res.text() || "Delete failed");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Delete error.");
+            }
+        });
+    }
+    </script>
+
     {{> logout}}
   </body>
-
 </html>
