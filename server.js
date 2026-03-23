@@ -181,14 +181,62 @@ app.get("/reservation", isAuthenticated, async (req, res) => {
     const labs = await require("./models/labSchema").find();
     res.render("reservation", { labs });
 });
-app.get("/manage", isAuthenticated, reservationController.getReservations);
-app.get("/manage", isAuthenticated, (req, res, next) => {
-    if (req.query.userId && req.session.user.role === "Lab Technician") {
-        req.studentUserId = req.query.userId;
-        return next();
+app.get("/manage", isAuthenticated, async (req, res) => {
+    try {
+        const LabModel = require("./models/labSchema");
+        const labs = await LabModel.find();
+
+        let reservations;
+        
+        // case 1: admin view [specific student (adminSearch feature)]
+        if (req.query.userId && req.session.user.role === "Lab Technician") {
+            const studentId = req.query.userId;
+            reservations = await Reservation.find({ userId: studentId })
+                .populate("userId")
+                .populate("lab")
+                .populate("lab_tech")
+                .sort({ createdAt: -1 });
+
+            const student = await require("./models/userSchema").findById(studentId);
+            
+            return res.render("manage", { 
+                reservations, 
+                labs, 
+                labsJSON: JSON.stringify(labs),
+                isAdmin: true,
+                viewingStudent: student ? student.fullname : "Unknown Student",
+                studentId: studentId
+            });
+        }
+        
+        // case 2: Admin view [all reservations]
+        if (req.session.user.role === "Lab Technician") {
+            reservations = await Reservation.find({})
+                .populate("userId")
+                .populate("lab")
+                .populate("lab_tech")
+                .sort({ createdAt: -1 });
+        } 
+        // case 3 - student view [own reservations]
+        else {
+            reservations = await Reservation.find({ userId: req.session.user._id })
+                .populate("userId")
+                .populate("lab")
+                .populate("lab_tech")
+                .sort({ createdAt: -1 });
+        }
+
+        res.render("manage", { 
+            reservations, 
+            labs, 
+            labsJSON: JSON.stringify(labs),
+            isAdmin: req.session.user.role === "Lab Technician"
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error retrieving reservations.");
     }
-    return reservationController.getReservations(req, res);
-}, reservationController.getStudentReservations);
+});
 
 // route to home
 app.get("/home", isAuthenticated, async (req, res) => {
