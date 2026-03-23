@@ -52,6 +52,7 @@ exports.createReservation = async (req, res) => {
         res.status(500).send("Reservation error.");
     }
 };
+
 // get reservations
 exports.getReservations = async (req, res) => {
     try {
@@ -60,19 +61,21 @@ exports.getReservations = async (req, res) => {
         const labs = await LabModel.find();
 
         if (req.session.user.role === "Lab Technician" && req.query.userId) {
-            // Admin viewing specific student
+            // admin - view specific student's reservations
             return exports.getStudentReservations(req, res);
         } else if (req.session.user.role === "Lab Technician") {
-            // Admin sees all reservations
+            // admin - view all students' reservations
             reservations = await Reservation.find({})
                 .populate("userId")
                 .populate("lab")
+                .populate("lab_tech")
                 .sort({ createdAt: -1 });
         } else {
-            // Student sees own reservations
+            // student - view own reservations only
             reservations = await Reservation.find({ userId: req.session.user._id })
                 .populate("userId")
                 .populate("lab")
+                .populate("lab_tech")
                 .sort({ createdAt: -1 });
         }
 
@@ -98,9 +101,14 @@ exports.getStudentReservations = async (req, res) => {
         const reservations = await Reservation.find({ userId: studentId })
             .populate("userId")
             .populate("lab")
+            .populate("lab_tech")
             .sort({ createdAt: -1 });
 
         const student = await require("../models/userSchema").findById(studentId);
+        
+        if (!student) {
+            return res.status(404).send("Student not found.");
+        }
 
         res.render("manage", { 
             reservations, 
