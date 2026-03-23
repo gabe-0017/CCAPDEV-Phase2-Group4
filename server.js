@@ -146,8 +146,19 @@ app.get("/reservations", isAuthenticated, reservationController.getReservations)
 app.get("/reservations/:id", isAuthenticated, async (req, res) => {
     try {
         const reservation = await Reservation.findById(req.params.id)
-            .populate("userId")
-            .populate("lab");
+            .populate({
+                path: "userId",
+                select: "fullname"
+            })
+            .populate({
+                path: "lab",
+                populate: {
+                    path: "lab_tech",
+                    select: "fullname"
+                }
+            })
+            .populate("lab_tech", "fullname");
+        
         if (!reservation) {
             return res.status(404).send("Reservation not found.");
         }
