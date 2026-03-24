@@ -1,3 +1,4 @@
+require('dotenv').config();
 const path = require("path");
 const express = require("express");
 const mongoose = require("mongoose");
@@ -10,14 +11,15 @@ const hbs = exphbs.create({
 });
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 const userController = require("./controllers/userController");
 const labController = require("./controllers/labController");
 const reservationController = require("./controllers/reservationController");
 const Reservation = require("./models/reservationSchema");
 
-mongoose.connect('mongodb://localhost:27017/labreserve')
+// database connection (local included)
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/labreserve')
     .then(() => console.log('MongoDB Connected'))
     .catch(err => console.error('MongoDB Error:', err));
 
@@ -38,12 +40,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
-// user authentication
+// user authentication (local included)
 app.use(session({
-    secret: "apdev-mco2-grp4",
+    secret: process.env.SESSION_SECRET || "apdev-mco3-grp4-super-secret-2026",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false }
+    cookie: { secure: process.env.NODE_ENV === 'production' }
 }));
 
 // pass user data to all views
@@ -98,7 +100,7 @@ app.post("/adminSearch", isAuthenticated, async (req, res) => {
         const { email } = req.body;
         const User = require("./models/userSchema");
         
-        // console.log("Searching for email:", email); // debug cmd log
+        console.log("Searching for email:", email); // debug cmd log
 
         const student = await User.findOne({ 
             $or: [
@@ -108,7 +110,7 @@ app.post("/adminSearch", isAuthenticated, async (req, res) => {
             role: "Student" 
         });
         
-        // console.log("Found student:", student ? student.email : "NONE"); // debug cmd log
+        console.log("Found student:", student ? student.email : "NONE"); // debug cmd log
         
         if (!student) {
             return res.render("adminSearch", { error: `No student found with email "${email}".` });
@@ -116,7 +118,7 @@ app.post("/adminSearch", isAuthenticated, async (req, res) => {
         
         res.redirect(`/manage?userId=${student._id}`);
     } catch (error) {
-        // console.error("Admin search error:", error); // debug cmd log
+        console.error("Admin search error:", error);
         res.status(500).render("adminSearch", { error: "Search error." });
     }
 });
@@ -342,6 +344,13 @@ app.get("/seed-techs", async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+// about page
+app.get("/about", (req, res) => {
+    res.render("about");
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Local: http://localhost:${PORT}`);
+    console.log(`Deployed: Check Render dashboard`);
 });
