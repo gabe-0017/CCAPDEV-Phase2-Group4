@@ -1,9 +1,12 @@
+const bcrypt = require('bcryptjs');
 const User = require("../models/userSchema");
 
 exports.registerUser = async (req, res) => {
     try {
-
         const { fullname, email, username, password, role } = req.body;
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
         const existingEmail = await User.findOne({ email });
         const existingUsername = await User.findOne({ username });
@@ -16,7 +19,7 @@ exports.registerUser = async (req, res) => {
             fullname,
             email,
             username,
-            password,
+            password: hashedPassword,
             role
         });
 
@@ -32,6 +35,7 @@ exports.registerUser = async (req, res) => {
         res.redirect("/home");
 
     } catch (error) {
+        console.error("Registration error:", error);
         res.status(500).send("Error registering user.");
     }
 };
@@ -42,7 +46,7 @@ exports.loginUser = async (req, res) => {
 
         const user = await User.findOne({ username, password });
 
-        if (!user) {
+        if (!user || !await bcrypt.compare(password, user.password)) {
             return res.status(400).send("Invalid login credentials.");
         }
 
@@ -55,6 +59,7 @@ exports.loginUser = async (req, res) => {
 
         res.redirect("/home");
     } catch (error) {
+        console.error("Login error:", error);
         res.status(500).send("Login error.");
     }
 };
