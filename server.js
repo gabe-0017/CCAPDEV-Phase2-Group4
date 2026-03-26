@@ -38,13 +38,11 @@ app.engine("handlebars", exphbs.engine({
 }));
 
 // database connection 
-// MONGODB_URI = mongodb+srv://johngabrielcalderon_db_user:Group4_Phase3@cluster0.0qwpgqm.mongodb.net/labreserve?retryWrites=true&w=majority
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/labreserve') // local included
     .then(() => console.log('MongoDB Connected'))
     .catch(err => console.error('MongoDB Error:', err));
 
 // user authentication
-// SESSION_SECRET = apdev-mco3-grp4-super-secret-2026
 app.use(session({
     secret: process.env.SESSION_SECRET || "apdev-mco3-grp4-super-secret-2026",
     resave: false,
