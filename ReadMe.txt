@@ -1,13 +1,13 @@
-NPM INSTALL:
+INSTALL DEPENDENCIES:
 npm install express mongoose express-handlebars express-session bcryptjs dotenv
 
 SEED DATA (run once):
-1. https://labreserve-cvce.onrender.com/seed-labs  -> 5 Labs (180 seats)
+1. https://labreserve-cvce.onrender.com/seed-labs  -> 5 Labs
 2. https://labreserve-cvce.onrender.com/seed-techs -> 5 Lab Technicians
 
-DEPLOYED LIVE: https://labreserve-cvce.onrender.com/
+LIVE DEPLOYED APP LINK: https://labreserve-cvce.onrender.com/
 
-TEST LOGIN (username/password):
+TEST LOGIN (username / password):
 Lab Tech: john_doe_123 / techpass_jd1
 
 /********** LOCAL SETUP **********/
