@@ -43,20 +43,34 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
     try {
         const { username, password } = req.body;
-
-        const user = await User.findOne({ username, password });
-
-        if (!user || !await bcrypt.compare(password, user.password)) {
+        
+        console.log(`Login attempt: ${username}`); // debug log 1
+        
+        const user = await User.findOne({ username });
+        
+        if (!user) {
+            console.log('User not found'); // debug log 2
             return res.status(400).send("Invalid login credentials.");
         }
-
-        // Store user in session
+        
+        console.log(`User found: ${user.username}, pass length: ${user.password.length}`); // debug log 3
+        
+        const isMatch = await bcrypt.compare(password, user.password);
+        console.log(`bcrypt result: ${isMatch}`); // debug log 4
+        
+        if (!isMatch) {
+            console.log('Password mismatch'); // debug log 5
+            return res.status(400).send("Invalid login credentials.");
+        }
+        
+        console.log('Login Success!'); // debug log 6
+        
         req.session.user = {
             _id: user._id,
             username: user.username,
             role: user.role
         };
-
+        
         res.redirect("/home");
     } catch (error) {
         console.error("Login error:", error);
