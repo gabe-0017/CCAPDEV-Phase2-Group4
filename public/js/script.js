@@ -6,19 +6,26 @@ if (loginForm) {
         e.preventDefault();
         const username = document.getElementById("username").value.trim();
         const password = document.getElementById("password").value.trim();
-
+    
+        const formData = new FormData();
+        formData.append('username', username);
+        formData.append('password', password);
+    
         try {
             const res = await fetch("/login", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
+                body: formData
             });
-
-            if (res.ok) window.location.href = "/home";
-            else alert(await res.text() || "Invalid login credentials.");
+            
+            const result = await res.text();
+            if (res.ok) {
+                window.location.href = "/home";
+            } else {
+                alert(result || "Invalid login credentials.");
+            }
         } catch (err) {
             console.error(err);
-            alert("Login error. Try again.");
+            alert("Login error.");
         }
     });
 }
