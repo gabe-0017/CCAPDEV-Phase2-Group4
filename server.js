@@ -5,11 +5,6 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoStore = require('connect-mongo');
 const exphbs = require("express-handlebars");
-const hbs = exphbs.create({
-  extname: 'handlebars',
-  helpers: { eq: (a, b) => a === b },
-  defaultLayout: false
-});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +21,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 
+// database connection 
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/labreserve') // local included
+    .then(() => console.log('MongoDB Connected'))
+    .catch(err => console.error('MongoDB Error:', err));
+
+// handlebars engine
 app.engine("handlebars", exphbs.engine({
   extname: "handlebars",
   helpers: { eq: (a, b) => a === b },
@@ -37,14 +38,9 @@ app.engine("handlebars", exphbs.engine({
   }
 }));
 
-// database connection 
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/labreserve') // local included
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.error('MongoDB Error:', err));
-
 // user authentication
 app.use(session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || 'apdev-mco3-grp4-not-so-secret-2026',
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ 
@@ -52,6 +48,8 @@ app.use(session({
     }),
     cookie: { 
         secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: 1000 * 60 * 60 * 24 // 24 hours
     }
 }));
