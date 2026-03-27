@@ -17,9 +17,12 @@ const reservationController = require("./controllers/reservationController");
 const Reservation = require("./models/reservationSchema");
 
 // connect to database
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/labreserve') // local included
+mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.error('MongoDB Error:', err));
+    .catch(err => {
+        console.error('MongoDB Error:', err.message);
+        process.exit(1);
+    });
 
 // handlebars engine
 app.set('view engine', 'handlebars');
@@ -53,14 +56,21 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     rolling: true,
-    store: sessionStore,
+    store: new session.MemoryStore(),
     cookie: { 
         secure: true,
         httpOnly: true,
         sameSite: 'none',
-        maxAge: 1000 * 60 * 60 * 24,
+        maxAge: 1000 * 60 * 60 * 24
     }
 }));
+
+mongoose.connection.once('connected', () => {
+    console.log('MongoDB connected - Switching to MongoDB sessions');
+    sessionStore.on('ready', () => {
+        console.log('MongoDB session store ready!');
+    });
+});
 
 // req debug log
 app.use((req, res, next) => {
@@ -76,7 +86,7 @@ app.use((req, res, next) => {
     console.log('===== SESSION LOG =====');
     console.log('Session ID:', req.sessionID);
     console.log('User in session:', req.session.user ? 'EXISTS' : 'NULL');
-    console.log('Store ready:', sessionStore.readyState === 1 ? 'YES' : 'NO');
+    console.log('MongoDB Connected:', mongoose.connection.readyState === 1 ? 'YES' : 'NO');
     console.log('=======================');
     next();
 });
@@ -292,6 +302,16 @@ app.get("/home", isAuthenticated, async (req, res) => {
 // about page
 app.get("/about", (req, res) => {
     res.render("about");
+});
+
+// test route (for db connection debug)
+app.get('/test-db', async (req, res) => {
+    try {
+        const count = await require('./models/userSchema').countDocuments();
+        res.json({ connected: true, users: count });
+    } catch (e) {
+        res.json({ connected: false, error: e.message });
+    }
 });
 
 /***** DATA CONFIG *****/
