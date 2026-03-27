@@ -333,11 +333,16 @@ app.get("/seed-techs", async (req, res) => {
         ];
 
         // hash passwords before save
-        const techs = await Promise.all(techsData.map(async (tech) => {
+        const techs = [];
+        for (const techData of techsData) {
             const salt = await bcrypt.genSalt(10);
-            tech.password = await bcrypt.hash(tech.password, salt);
-            return new User(tech);
-        }));
+            const hashedPassword = await bcrypt.hash(techData.password, salt);
+            techs.push({
+                ...techData,
+                password: hashedPassword
+            });
+            console.log(`Hashed ${techData.username}: ${hashedPassword.substring(0, 20)}...`);
+        }
         
         const createdTechs = await User.insertMany(techs);
         
