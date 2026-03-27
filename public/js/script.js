@@ -4,13 +4,24 @@ const loginForm = document.getElementById("loginForm");
 if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const username = document.getElementById("username").value.trim();
-        const password = document.getElementById("password").value.trim();
-    
+        
+        const usernameInput = document.getElementById("username");
+        const passwordInput = document.getElementById("password");
+        
+        const username = usernameInput?.value?.trim();
+        const password = passwordInput?.value?.trim();
+        
+        console.log('JS Login attempt:', { username, password }); // login debug log
+        
+        if (!username || !password) {
+            alert('Please enter both username and password');
+            return;
+        }
+
         const formData = new FormData();
         formData.append('username', username);
         formData.append('password', password);
-    
+        
         try {
             const res = await fetch("/login", {
                 method: "POST",
@@ -18,14 +29,16 @@ if (loginForm) {
             });
             
             const result = await res.text();
+            console.log('Login response:', res.status, result); // login debug log
+            
             if (res.ok) {
                 window.location.href = "/home";
             } else {
                 alert(result || "Invalid login credentials.");
             }
         } catch (err) {
-            console.error(err);
-            alert("Login error.");
+            console.error('Login fetch error:', err);
+            alert("Login error. Check console.");
         }
     });
 }
