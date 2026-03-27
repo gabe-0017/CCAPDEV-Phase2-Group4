@@ -1,3 +1,5 @@
+/***** DB CONNECTION / SET ENGINE / SESSION CREATION *****/
+
 require('dotenv').config();
 const path = require("path");
 const express = require("express");
@@ -14,28 +16,14 @@ const labController = require("./controllers/labController");
 const reservationController = require("./controllers/reservationController");
 const Reservation = require("./models/reservationSchema");
 
-app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, 'views'));
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
-
-// req debug log
-app.use((req, res, next) => {
-    console.log('Method:', req.method);
-    console.log('URL:', req.url);
-    console.log('Body:', req.body);
-    console.log('Content-Type:', req.headers['content-type']);
-    next();
-});
-
-// database connection 
+// connect to database
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/labreserve') // local included
     .then(() => console.log('MongoDB Connected'))
     .catch(err => console.error('MongoDB Error:', err));
 
 // handlebars engine
+app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, 'views'));
 app.engine("handlebars", exphbs.engine({
   extname: "handlebars",
   helpers: { eq: (a, b) => a === b },
@@ -47,27 +35,42 @@ app.engine("handlebars", exphbs.engine({
   }
 }));
 
-// user authentication
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "public")));
+
+// create session
+const sessionStore = MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/labreserve',
+    collectionName: 'sessions',
+    ttl: 24 * 60 * 60,
+    autoRemove: 'interval',
+    autoRemoveInterval: 10
+});
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'apdev-mco3-grp4-not-so-secret-2026',
     resave: false,
     saveUninitialized: false,
     rolling: true,
+    store: sessionStore,
     cookie: { 
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
         maxAge: 1000 * 60 * 60 * 24,
         domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
-    },
-    store: MongoStore.create({ 
-        mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/labreserve',
-        collectionName: 'sessions',
-        ttl: 24 * 60 * 60,
-        autoRemove: 'interval',
-        autoRemoveInterval: 10
-    })
+    }
 }));
+
+// req debug log
+app.use((req, res, next) => {
+    console.log('Method:', req.method);
+    console.log('URL:', req.url);
+    console.log('Body:', req.body);
+    console.log('Content-Type:', req.headers['content-type']);
+    next();
+});
 
 // session debug log
 app.use((req, res, next) => {
@@ -78,6 +81,8 @@ app.use((req, res, next) => {
     });
     next();
 });
+
+/***** ROUTES *****/
 
 // pass user data to all views
 app.use((req, res, next) => {
@@ -285,6 +290,13 @@ app.get("/home", isAuthenticated, async (req, res) => {
     }
 });
 
+// about page
+app.get("/about", (req, res) => {
+    res.render("about");
+});
+
+/***** DATA CONFIG *****/
+
 // seed labs
 app.get("/seed-labs", async (req, res) => {
     try {
@@ -388,10 +400,7 @@ app.get("/seed-techs", async (req, res) => {
     }
 });
 
-// about page
-app.get("/about", (req, res) => {
-    res.render("about");
-});
+/***** RUN SERVER *****/
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
