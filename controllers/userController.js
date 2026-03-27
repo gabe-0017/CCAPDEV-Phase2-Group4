@@ -42,28 +42,38 @@ exports.registerUser = async (req, res) => {
 
 exports.loginUser = async (req, res) => {
     try {
-        const { username, password } = req.body;
+        // login debug log 1
+        console.log('req.body:', req.body);
+        console.log('Username received:', req.body?.username);
         
-        console.log(`Login attempt: ${username}`); // debug log 1
+        const { username, password } = req.body;
+
+        // login debug log 2
+        if (!username || !password) {
+            console.log('Missing username or password');
+            return res.status(400).send("Username and password required.");
+        }
+        
+        console.log(`Login attempt: ${username}`); // login debug log 3
         
         const user = await User.findOne({ username });
         
         if (!user) {
-            console.log('User not found'); // debug log 2
+            console.log('User not found'); // login debug log 4
             return res.status(400).send("Invalid login credentials.");
         }
         
-        console.log(`User found: ${user.username}, pass length: ${user.password.length}`); // debug log 3
+        console.log(`User found: ${user.username}, pass length: ${user.password.length}`); // login debug log 5
         
         const isMatch = await bcrypt.compare(password, user.password);
-        console.log(`bcrypt result: ${isMatch}`); // debug log 4
+        console.log(`bcrypt result: ${isMatch}`); // login debug log 6
         
         if (!isMatch) {
-            console.log('Password mismatch'); // debug log 5
+            console.log('Password mismatch'); // login debug log 7
             return res.status(400).send("Invalid login credentials.");
         }
         
-        console.log('Login Success!'); // debug log 6
+        console.log('Login Success!'); // login debug log 8
         
         req.session.user = {
             _id: user._id,
