@@ -19,6 +19,7 @@ exports.createReservation = async (req, res) => {
         // find lab w/ technician
         const labDoc = await Lab.findById(lab).populate('lab_tech');
         if (!labDoc) return res.status(404).send("Lab not found.");
+        if (!labDoc.lab_tech) return res.status(400).send("Lab has no assigned technician.");
 
         // check for overlapping reservation
         const existingReservation = await Reservation.findOne({
