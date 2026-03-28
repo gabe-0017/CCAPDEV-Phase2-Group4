@@ -36,6 +36,8 @@ exports.createReservation = async (req, res) => {
             return res.status(400).send("Seat already reserved for this time range.");
         }
 
+        const labTechId = labDoc.lab_tech?._id || null;
+
         const reservation = new Reservation({
             userId,
             lab,
@@ -44,7 +46,7 @@ exports.createReservation = async (req, res) => {
             start_time,
             end_time,
             purpose,
-            lab_tech: labDoc.lab_tech._id,
+            lab_tech: labTechId,
             status: "Pending"
         });
 
