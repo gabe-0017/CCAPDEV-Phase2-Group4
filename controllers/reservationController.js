@@ -7,7 +7,8 @@ exports.createReservation = async (req, res) => {
     try {
         const { userId, lab, seat, date, start_time, end_time, purpose } = req.body;
 
-        const user = await User.findById(userId);
+        const userId = req.session.user._id;
+        
         if (!user) return res.status(404).send("User not found.");
 
         // get lab w/ technician
