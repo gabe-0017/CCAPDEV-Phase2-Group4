@@ -128,6 +128,30 @@
           seatSelect.innerHTML = '<option disabled>Error loading seats</option>';
         }
       });
+
+      window.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const prefillLab = urlParams.get('lab');
+        const prefillSeat = urlParams.get('seat');
+        
+        if (prefillLab && prefillSeat) {
+          const labSelect = document.getElementById('labSelect');
+          if (labSelect) labSelect.value = prefillLab;
+          
+          labSelect.dispatchEvent(new Event('change'));
+          
+          setTimeout(() => {
+            const seatSelect = document.getElementById('seatSelect');
+            if (seatSelect) seatSelect.value = prefillSeat;
+          }, 500);
+          
+          const formCard = document.querySelector('.form-card');
+          const notice = document.createElement('div');
+          notice.style.cssText = 'background:#d4edda;color:#155724;padding:15px;border-radius:8px;margin-bottom:20px;border-left:4px solid #28a745;';
+          notice.innerHTML = `Prefilled: Seat ${prefillSeat} in selected lab`;
+          formCard.insertBefore(notice, formCard.firstChild);
+        }
+      });
     </script>
 
     {{> logout}}
