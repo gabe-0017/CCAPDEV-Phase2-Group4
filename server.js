@@ -232,8 +232,8 @@ app.get("/reservations/:id", isAuthenticated, async (req, res) => {
 app.delete("/reservations/:id", isAuthenticated, reservationController.cancelReservation);
 app.put("/reservations/:id", isAuthenticated, reservationController.editReservation);
 app.get("/reservation", isAuthenticated, async (req, res) => {
-    const labs = await require("./models/labSchema").find();
-    res.render("reservation", { labs });
+  const labs = await require("./models/labSchema").find();
+  res.render("reservation", { labs });
 });
 app.get("/manage", isAuthenticated, async (req, res) => {
     try {
