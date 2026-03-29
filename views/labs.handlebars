@@ -106,8 +106,10 @@
     });
 
     function selectSeat(seatNumber, labId) {
-      alert(`Selected: Seat ${seatNumber} in Lab ID: ${labId}\n\nRedirecting to reservation...`);
-      window.location.href = `/reservation?lab=${labId}&seat=${seatNumber}`; // does not redirect to reservation form with pre-filled values
+      const url = new URL('/reservation', window.location.origin);
+      url.searchParams.append('lab', labId);
+      url.searchParams.append('seat', seatNumber);
+      window.location.href = url;
     }
   </script>
 
