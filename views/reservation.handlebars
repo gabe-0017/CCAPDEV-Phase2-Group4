@@ -60,12 +60,12 @@
 
             <div class="form-group">
               <label>Date</label>
-              <input type="date" name="date" required />
+              <input type="date" id="dateInput" name="date" required />
             </div>
 
             <div class="form-group">
               <label>Start Time</label>
-              <input type="time" name="start_time" required step="1800" />
+              <input type="time" id="startTimeInput" name="start_time" required step="1800" />
             </div>
 
             <div class="form-group">
@@ -133,22 +133,26 @@
         const urlParams = new URLSearchParams(window.location.search);
         const prefillLabId = urlParams.get('lab');
         const prefillSeat = urlParams.get('seat');
+        const prefillDate = urlParams.get('date');
+        const prefillStartTime = urlParams.get('start_time');
         
-        if (prefillLabId && prefillSeat) {
+        if (prefillLabId && prefillSeat) { // prefill selected 'lab' & 'seat' from labs page
           try {
             const labRes = await fetch(`/labs/${prefillLabId}`);
             const labData = await labRes.json();
             const labName = labData.lab || 'Selected Lab';
             
-            // prefill form
             const labSelect = document.getElementById('labSelect');
             if (labSelect) labSelect.value = prefillLabId;
             labSelect.dispatchEvent(new Event('change'));
             
-            setTimeout(() => {
+            const waitForSeats = setInterval(() => {
               const seatSelect = document.getElementById('seatSelect');
-              if (seatSelect) seatSelect.value = prefillSeat;
-            }, 500);
+              if (seatSelect && seatSelect.options.length > 1) {
+                seatSelect.value = prefillSeat;
+                clearInterval(waitForSeats);
+              }
+            }, 100);
             
             const formCard = document.querySelector('.form-card');
             const notice = document.createElement('div');
@@ -162,7 +166,7 @@
               font-weight: 500;
               box-shadow: 0 4px 12px rgba(40,167,69,0.2);
             `;
-            notice.innerHTML = `<strong>${labName}</strong> - Seat <strong>${prefillSeat}</strong> selected!`;
+            notice.innerHTML = `<strong>${labName}</strong> - <strong>Seat ${prefillSeat}</strong> selected!`;
             formCard.insertBefore(notice, formCard.firstChild);
             
           } catch (error) {
@@ -173,6 +177,15 @@
             notice.textContent = `Seat ${prefillSeat} selected!`;
             formCard.insertBefore(notice, formCard.firstChild);
           }
+        }
+        if (prefillDate) { // prefill selected 'date' from labs page
+          const dateInput = document.getElementById('dateInput');
+          if (dateInput) dateInput.value = prefillDate;
+        }
+      
+        if (prefillStartTime) { // prefill selected 'start time' from labs page
+          const startTimeInput = document.getElementById('startTimeInput');
+          if (startTimeInput) startTimeInput.value = prefillStartTime;
         }
       });
     </script>
