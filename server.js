@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoStore = require('connect-mongo');
 const exphbs = require("express-handlebars");
+const fileUpload = require("express-fileupload");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -44,6 +45,11 @@ app.engine("handlebars", exphbs.engine({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
+app.use(fileUpload({
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    abortOnLimit: true,
+    responseOnLimit: 'File size too large'
+}));
 
 // create session
 const sessionStore = MongoStore.create({
@@ -486,6 +492,57 @@ app.get("/seed-techs", async (req, res) => {
         `);
     } catch (error) {
         res.status(500).send("Error: " + error.message);
+    }
+});
+
+// Profile API endpoints
+app.post("/profile/upload-picture", isAuthenticated, async (req, res) => {
+    try {
+        const User = require("./models/userSchema");
+        
+        if (!req.files || !req.files.profilePicture) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
+
+        const file = req.files.profilePicture;
+        
+        // Validate file type
+        if (!file.mimetype.startsWith('image/')) {
+            return res.status(400).json({ error: "File must be an image" });
+        }
+
+        // Convert to base64
+        const base64 = file.data.toString('base64');
+        const dataURI = `data:${file.mimetype};base64,${base64}`;
+
+        const user = await User.findByIdAndUpdate(
+            req.session.user._id,
+            { profilePicture: dataURI },
+            { new: true }
+        );
+
+        res.json({ success: true, profilePicture: user.profilePicture });
+    } catch (error) {
+        console.error("Error uploading picture:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post("/profile/update-description", isAuthenticated, async (req, res) => {
+    try {
+        const User = require("./models/userSchema");
+        const { description } = req.body;
+
+        const user = await User.findByIdAndUpdate(
+            req.session.user._id,
+            { description: description || "" },
+            { new: true }
+        );
+
+        res.json({ success: true, description: user.description });
+    } catch (error) {
+        console.error("Error updating description:", error);
+        res.status(500).json({ error: error.message });
     }
 });
 
