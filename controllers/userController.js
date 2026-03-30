@@ -94,6 +94,14 @@ exports.updateUserProfile = async (req, res) => {
     const { id } = req.params;
     const updates = { ...req.body };
 
+    // Handle profile picture upload
+    if (req.files && req.files.profilePicture) {
+      const profilePicFile = req.files.profilePicture;
+      // Convert file to base64
+      const base64 = profilePicFile.data.toString("base64");
+      updates.profilePicture = `data:${profilePicFile.mimetype};base64,${base64}`;
+    }
+
     const newPassword = req.body.newPassword?.trim();
     const confirmPassword = req.body.confirmPassword?.trim();
 
@@ -130,7 +138,10 @@ exports.getUserProfile = async (req, res) => {
       return res.status(404).send("User not found.");
     }
 
-    res.render("profile", { user });
+   // Check if viewing own profile
+    const isOwnProfile = req.session.user._id.toString() === req.params.id;
+
+    res.render("profile", { user, isOwnProfile });
   } catch (error) {
     res.status(500).send("Error retrieving user.");
   }
