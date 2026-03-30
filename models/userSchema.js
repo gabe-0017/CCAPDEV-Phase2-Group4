@@ -29,7 +29,15 @@ const userSchema = new mongoose.Schema({
     reservations: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Reservation"
-    }]
+    }],
+    profilePicture: {
+        type: String,
+        default: null
+    },
+    description: {
+        type: String,
+        default: ""
+    }
 });
 
 module.exports = mongoose.model("User", userSchema);
