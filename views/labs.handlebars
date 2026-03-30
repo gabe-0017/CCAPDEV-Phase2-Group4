@@ -126,33 +126,38 @@
     reservationDate.addEventListener('change', async function () {
       if (!selectedSeat || !selectedLabId) return;
       const date = this.value;
-      console.log("==================================================");
-      console.log("Fetching timeslots for:", selectedLabId, selectedSeat, date);
-
+    
       if (!date) return;
-
+    
       timeslotsDiv.innerHTML = '<p>Loading available slots...</p>';
-
+    
       try {
         const response = await fetch(`/labs/${selectedLabId}/slots?seat=${selectedSeat}&date=${date}`);
-        console.log("Fetch response status:", response.status);
-        const slots = await response.json();
-        console.log("Slots received:", slots);
-        console.log("==================================================");
-
-        if (slots.length === 0) {
+        const data = await response.json();
+    
+        console.log("Slots received:", data);
+    
+        const slots = data.availableSlots;
+    
+        if (!slots || slots.length === 0) {
           timeslotsDiv.innerHTML = '<p>No available time slots for this seat on this date.</p>';
           return;
         }
-
+    
         timeslotsDiv.innerHTML = `
           <ul>
-            ${slots.map(slot => `<li>${slot.time} ${slot.status === 'Reserved' ? '(Reserved)' : '(Available)'}</li>`).join('')}
+            ${slots.map(slot => `
+              <li>
+                ${slot} (Available)
+                <button onclick="goToReservation('${selectedLabId}', '${selectedSeat}', '${date}', '${slot}')">
+                  Reserve
+                </button>
+              </li>
+            `).join('')}
           </ul>
         `;
       } catch (err) {
         console.error('Error fetching timeslots:', err);
-        console.log("==================================================");
         timeslotsDiv.innerHTML = '<p style="color:red;">Error fetching timeslots. Try again.</p>';
       }
     });
