@@ -16,7 +16,6 @@ const Reservation = require('./models/Reservation');
 const userController = require("./controllers/userController");
 const labController = require("./controllers/labController");
 const reservationController = require("./controllers/reservationController");
-const Reservation = require("./models/reservationSchema");
 
 /********** DB CONNECTION / ENGINE SETTING / SESSION CREATION **********/
 
