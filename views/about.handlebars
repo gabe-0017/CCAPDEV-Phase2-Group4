@@ -1,25 +1,87 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <title>About - LabReserve</title>
-  <link rel="stylesheet" href="/css/styles.css">
+  <meta charset="UTF-8" />
+  <title>About | LabReserve</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <style>
+    body {
+      background: #f4f7f6;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .about-card {
+      background: #fff;
+      padding: 40px 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      max-width: 700px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .about-card h2 {
+      color: #087830;
+      margin-bottom: 15px;
+    }
+
+    .about-card p.subtitle {
+      color: #555;
+      margin-bottom: 25px;
+      font-size: 1.1em;
+    }
+
+    .about-card p.description {
+      color: #333;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    .btn-home {
+      background: #087830;
+      color: #fff;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.3s;
+      text-decoration: none;
+    }
+
+    .btn-home:hover {
+      background: #065f24;
+    }
+  </style>
 </head>
-<body class="bg">
-  <header>
-    <nav class="navbar">
-      <a class="logo" href="/home">LabReserve.</a>
-      <ul class="nav-links">
-        <li><a href="/home">Home</a></li>
-        <li><a href="/about">About</a></li>
-        <li><a href="#" id="logoutBtn">Logout</a></li>
-      </ul>
-    </nav>
-  </header>
 
-  <!-- insert 'about page' content here -->
+<body>
 
-  {{> logout}}
-  <script src="/js/script.js"></script>
+  <div class="about-card">
+    <h2>About LabReserve</h2>
+    <p class="subtitle">LabReserve is built with; Node.js, Express, MongoDB, and Handlebars.</p>
+    <p class="description">
+      NPM Packages/Dependencies:
+      <li>bcryptjs</li>
+      <li>connect-mongo</li>
+      <li>dotenv</li>
+      <li>express</li>
+      <li>express-fileupload</li>
+      <li>express-handlebars</li>
+      <li>express-session</li>
+      <li>mongoose</li>
+      <li>socket.io</li>
+    </p>
+    <a href="/home" class="btn-home">Go back to Homepage</a>
+  </div>
+
 </body>
+
 </html>
