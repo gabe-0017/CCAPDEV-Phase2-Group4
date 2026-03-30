@@ -8,16 +8,16 @@
     "dev": "nodemon server.js"
   },
   "dependencies": {
-    "bcryptjs": "",
-    "connect-mongo": "",
-    "dotenv": "",
-    "express": "",
-    "express-handlebars": "",
-    "express-session": "",
-    "mongoose": "",
-    "socket.io": ""
+    "bcryptjs": "^3.0.3",
+    "connect-mongo": "^6.0.0",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "express-handlebars": "^8.0.7",
+    "express-session": "^1.19.0",
+    "mongoose": "^9.3.3",
+    "socket.io": "^4.8.3"
   },
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   }
 }
