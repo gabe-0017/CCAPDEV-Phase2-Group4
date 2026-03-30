@@ -10,9 +10,7 @@ TEST LOGIN (username / password):
 Student: bob_smith_789 / studentpass_bs
 Lab Tech: john_doe_123 / techpass_jd1
 
-/********** LINKS **********/
-Platform as a Service:
-https://dashboard.render.com/web/srv-d716vl3uibrs739ostf0/events
-
-Database:
-https://cloud.mongodb.com/v2/69b34f8b58ef22e29ef37ca5#/overview
+/********** RUN LOCALLY **********/
+- npm install
+- npm start
+- open "http://localhost:3000" in browser
