@@ -204,6 +204,31 @@ app.get("/labs/:id", isAuthenticated, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+app.get('/labs/:labId/slots', isAuthenticated, async (req, res) => {
+    const { labId } = req.params;
+    const { seat, date } = req.query;
+    console.log("==================================================");
+    console.log("Requested labId:", labId, "seat:", seat, "date:", date); // debug log
+
+    try {
+        // fetch reservations for this lab, seat, and date
+        const reservations = await Reservation.find({
+            lab: labId,
+            date: date,
+            seats: seat
+        });
+
+        console.log("Found reservations:", reservations); // debug log
+        console.log("==================================================");
+        
+        res.json(reservations);
+
+    } catch (err) {
+        console.error("Error in /slots route:", err); // debug log
+        console.log("==================================================");
+        res.status(500).json({ error: 'Server error fetching timeslots' });
+    }
+});
 router.get('/:labId/availability', async (req, res) => {
     try {
         const labId = req.params.labId;
