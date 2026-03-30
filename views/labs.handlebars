@@ -40,7 +40,7 @@
 
     <div class="seat-map">
       <div class="screen">Black/White Board</div>
-      
+
       <div class="seat-grid" id="seatGrid">
         <div style="padding: 60px; text-align: center; color: #666; display: flex; justify-content: center;">
           <p style="white-space: nowrap;">Select a laboratory to view available seats</p>
@@ -68,10 +68,20 @@
   <script src="/js/script.js"></script>
 
   <script>
-    document.getElementById('labSelect').addEventListener('change', async function() {
+    const labSelect = document.getElementById('labSelect');
+    const seatGrid = document.getElementById('seatGrid');
+    const reservationPanel = document.getElementById('seatReservationPanel');
+    const reservationDate = document.getElementById('reservationDate');
+    const timeslotsDiv = document.getElementById('reservationTimeslots');
+    let selectedSeat = null;
+    let selectedLabId = null;
+
+    labSelect.addEventListener('change', async function () {
       const labId = this.value;
-      const seatGrid = document.getElementById('seatGrid');
-      
+      selectedLabId = labId;
+      selectedSeat = null;
+      reservationPanel.style.display = 'none';
+
       if (!labId) {
         seatGrid.innerHTML = `
           <div style="padding: 60px; text-align: center; color: #666; display: flex; justify-content: center;">
@@ -80,39 +90,77 @@
         `;
         return;
       }
-      
+
+      seatGrid.innerHTML = '<div style="padding: 60px; text-align: center;">Loading seats...</div>';
+
       try {
-        seatGrid.innerHTML = '<div style="padding: 60px; text-align: center;">Loading seats...</div>';
-        
         const response = await fetch(`/labs/${labId}`);
         const lab = await response.json();
-        
-        // render seats
+
         seatGrid.innerHTML = `
           <div style="display: grid; grid-template-columns: repeat(12, 88px); gap: 12px; justify-content: center; margin: 0 auto;">
             ${lab.seats.map(seat => `
               <div class="seat ${seat.status === 'Reserved' ? 'reserved' : ''}" 
-                  style="cursor: pointer;" 
-                  onclick="selectSeat('${seat.seatNumber}', '${lab._id}')">
+                   style="cursor: pointer;" 
+                   onclick="selectSeat('${seat.seatNumber}', '${lab._id}')">
                 ${seat.seatNumber}
               </div>
             `).join('')}
           </div>
         `;
-      } catch (error) {
-        console.error('Error loading lab:', error);
+      } catch (err) {
+        console.error('Error loading lab:', err);
         seatGrid.innerHTML = '<p style="color: red; padding: 60px; text-align: center;">Error loading seats. Try again.</p>';
       }
     });
 
     function selectSeat(seatNumber, labId) {
+      selectedSeat = seatNumber;
+      selectedLabId = labId;
+      reservationPanel.style.display = 'block';
+      reservationPanel.querySelector('#reservationPanelTitle').innerText = `Seat ${seatNumber} - Select a date`;
+
+      timeslotsDiv.innerHTML = '<p class="hint">Select a date to see available time slots.</p>';
+    }
+
+    reservationDate.addEventListener('change', async function () {
+      if (!selectedSeat || !selectedLabId) return;
+      const date = this.value;
+
+      if (!date) return;
+
+      timeslotsDiv.innerHTML = '<p>Loading available slots...</p>';
+
+      try {
+        const response = await fetch(`/labs/${selectedLabId}/slots?seat=${selectedSeat}&date=${date}`);
+        const slots = await response.json();
+
+        if (slots.length === 0) {
+          timeslotsDiv.innerHTML = '<p>No available time slots for this seat on this date.</p>';
+          return;
+        }
+
+        timeslotsDiv.innerHTML = `
+          <ul>
+            ${slots.map(slot => `<li>${slot.time} ${slot.status === 'Reserved' ? '(Reserved)' : '(Available)'}</li>`).join('')}
+          </ul>
+        `;
+      } catch (err) {
+        console.error('Error fetching timeslots:', err);
+        timeslotsDiv.innerHTML = '<p style="color:red;">Error fetching timeslots. Try again.</p>';
+      }
+    });
+
+    function goToReservation(labId, seatNumber, date, time) {
       const url = new URL('/reservation', window.location.origin);
       url.searchParams.append('lab', labId);
       url.searchParams.append('seat', seatNumber);
+      url.searchParams.append('date', date);
+      url.searchParams.append('time', time);
       window.location.href = url;
     }
   </script>
 
-{{> logout}}
+  {{> logout}}
 </body>
 </html>
