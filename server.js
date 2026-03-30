@@ -214,8 +214,9 @@ app.get('/labs/:labId/slots', isAuthenticated, async (req, res) => {
         // fetch reservations for this lab, seat, and date
         const reservations = await Reservation.find({
             lab: labId,
+            seat: seat,
             date: date,
-            seats: seat
+            status: { $ne: "Cancelled" }
         });
 
         console.log("Found reservations:", reservations); // debug log
@@ -241,7 +242,9 @@ router.get('/:labId/availability', async (req, res) => {
         // fetch reservations for this lab and date
         const reservations = await Reservation.find({
             lab: labId,
-            date: date
+            seat: seat,
+            date: date,
+            status: { $ne: "Cancelled" }
         });
 
         // create availability map
