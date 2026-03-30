@@ -9,6 +9,10 @@ const exphbs = require("express-handlebars");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const router = express.Router();
+const Lab = require('./models/Lab');
+const Reservation = require('./models/Reservation');
+
 const userController = require("./controllers/userController");
 const labController = require("./controllers/labController");
 const reservationController = require("./controllers/reservationController");
@@ -201,6 +205,38 @@ app.get("/labs/:id", isAuthenticated, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+router.get('/:labId/availability', async (req, res) => {
+    try {
+        const labId = req.params.labId;
+        const date = req.query.date;
+
+        // fetch lab seats
+        const lab = await Lab.findById(labId);
+        if (!lab) return res.status(404).json({ error: 'Lab not found' });
+
+        // fetch reservations for this lab and date
+        const reservations = await Reservation.find({
+            lab: labId,
+            date: date
+        });
+
+        // create availability map
+        const seatStatus = lab.seats.map(seatNum => {
+            const reserved = reservations.find(r => r.seats.includes(seatNum));
+            return {
+                seatNumber: seatNum,
+                reserved: !!reserved,
+                reservedBy: reserved && !reserved.anonymous ? reserved.userName : null
+            };
+        });
+
+        res.json({ labId, date, seatStatus });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+module.exports = router;
 
 // reservation routes
 app.post("/reserve", isAuthenticated, reservationController.createReservation);
